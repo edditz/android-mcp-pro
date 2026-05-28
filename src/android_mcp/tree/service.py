@@ -6,6 +6,7 @@ from xml.etree.ElementTree import Element
 from xml.etree import ElementTree
 from typing import TYPE_CHECKING
 import random
+import re
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,51 @@ class Tree:
     def get_element_tree(self, xml_data=None)->'Element':
         tree_string = xml_data if xml_data else self.mobile.device.dump_hierarchy()
         return ElementTree.fromstring(tree_string)
-    
+
+    def get_layout_tree(self, xml_data=None, max_depth=10):
+        """Parse full view hierarchy into a LayoutNode tree."""
+        from android_mcp.tree.views import LayoutNode, BoundingBox
+
+        element_tree = self.get_element_tree(xml_data=xml_data)
+
+        # Skip the <hierarchy> wrapper; start from the first child node
+        if element_tree.tag == 'hierarchy' and len(element_tree) > 0:
+            element_tree = element_tree[0]
+
+        def parse_node(node, depth):
+            bounds_match = re.search(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', node.get('bounds', ''))
+            if bounds_match:
+                x1, y1, x2, y2 = map(int, bounds_match.groups())
+                bounds = BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2)
+            else:
+                bounds = BoundingBox(x1=0, y1=0, x2=0, y2=0)
+
+            raw_id = node.get('resource-id', '')
+            short_id = raw_id.split('/')[-1] if '/' in raw_id else raw_id
+
+            children = ()
+            if depth < max_depth:
+                child_nodes = [parse_node(child, depth + 1) for child in node]
+                children = tuple(c for c in child_nodes if c is not None)
+
+            return LayoutNode(
+                class_name=node.get('class', ''),
+                resource_id=short_id,
+                bounds=bounds,
+                text=node.get('text', ''),
+                content_desc=node.get('content-desc', ''),
+                enabled=node.get('enabled', 'false') == 'true',
+                visible=node.get('visible-to-user', 'false') == 'true',
+                clickable=node.get('clickable', 'false') == 'true',
+                focused=node.get('focused', 'false') == 'true',
+                checked=node.get('checked', 'false') == 'true',
+                scrollable=node.get('scrollable', 'false') == 'true',
+                depth=depth,
+                children=children,
+            )
+
+        return parse_node(element_tree, 0)
+
     def get_state(self, xml_data=None)->TreeState:
         interactive_elements=self.get_interactive_elements(xml_data=xml_data)
         return TreeState(interactive_elements=interactive_elements)

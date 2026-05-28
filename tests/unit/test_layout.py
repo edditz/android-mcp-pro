@@ -79,3 +79,64 @@ def test_layout_node_with_children():
     )
     assert len(parent.children) == 1
     assert parent.children[0].text == "child text"
+
+
+def test_get_layout_tree_basic():
+    """Test parsing a simple XML hierarchy into LayoutNode tree."""
+    from android_mcp.tree.service import Tree
+
+    xml = """\
+    <hierarchy>
+      <node class="android.widget.FrameLayout" resource-id="root"
+            bounds="[0,0][100,200]" enabled="true" visible-to-user="true"
+            clickable="false" focused="false" checked="false"
+            scrollable="false" text="" content-desc="">
+        <node class="android.widget.TextView" resource-id="title"
+              bounds="[10,10][90,40]" enabled="true" visible-to-user="true"
+              clickable="false" focused="false" checked="false"
+              scrollable="false" text="Hello" content-desc=""/>
+      </node>
+    </hierarchy>"""
+
+    tree = Tree(mobile=None)
+    root = tree.get_layout_tree(xml_data=xml)
+
+    assert root is not None
+    assert root.class_name == "android.widget.FrameLayout"
+    assert root.resource_id == "root"
+    assert root.depth == 0
+    assert len(root.children) == 1
+    assert root.children[0].text == "Hello"
+    assert root.children[0].depth == 1
+
+
+def test_get_layout_tree_max_depth():
+    """Test that max_depth truncates deeper nodes."""
+    from android_mcp.tree.service import Tree
+
+    xml = """\
+    <hierarchy>
+      <node class="android.widget.FrameLayout" resource-id="l0"
+            bounds="[0,0][100,200]" enabled="true" visible-to-user="true"
+            clickable="false" focused="false" checked="false"
+            scrollable="false" text="" content-desc="">
+        <node class="android.widget.FrameLayout" resource-id="l1"
+              bounds="[0,0][100,200]" enabled="true" visible-to-user="true"
+              clickable="false" focused="false" checked="false"
+              scrollable="false" text="" content-desc="">
+          <node class="android.widget.TextView" resource-id="l2"
+                bounds="[10,10][90,40]" enabled="true" visible-to-user="true"
+                clickable="false" focused="false" checked="false"
+                scrollable="false" text="deep" content-desc=""/>
+        </node>
+      </node>
+    </hierarchy>"""
+
+    tree = Tree(mobile=None)
+    root = tree.get_layout_tree(xml_data=xml, max_depth=1)
+
+    assert root is not None
+    assert root.depth == 0
+    assert len(root.children) == 1
+    assert root.children[0].depth == 1
+    assert root.children[0].children == ()
