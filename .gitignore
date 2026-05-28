@@ -10,3 +10,9 @@ wheels/
 .venv
 *.mcpb
 notebook.ipynb
+
+# Debug logs
+debug_logs/
+
+# macOS
+.DS_Store
