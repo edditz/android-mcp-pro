@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from tabulate import tabulate
 
@@ -22,6 +24,7 @@ class BoundingBox:
 @dataclass
 class TreeState:
     interactive_elements:list[ElementNode]
+    layout_root: LayoutNode | None = None
 
     def to_string(self):
         data = [[index, node.name, node.resource_id, node.class_name, node.coordinates.to_string()] for index, node in enumerate(self.interactive_elements)]
@@ -34,3 +37,19 @@ class CenterCord:
 
     def to_string(self):
         return f'({self.x},{self.y})'
+
+@dataclass(frozen=True)
+class LayoutNode:
+    class_name: str
+    resource_id: str
+    bounds: BoundingBox
+    text: str
+    content_desc: str
+    enabled: bool
+    visible: bool
+    clickable: bool
+    focused: bool
+    checked: bool
+    scrollable: bool
+    depth: int
+    children: tuple['LayoutNode', ...]
