@@ -57,11 +57,19 @@ def _log_tool_call(tool_name: str, params: dict, result) -> None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     filename = f"{tool_name}_{timestamp}.json"
     filepath = os.path.join(DEBUG_LOG_DIR, filename)
+
+    if isinstance(result, str):
+        formatted_result = result.split("\n")
+    elif isinstance(result, list):
+        formatted_result = [r.split("\n") if isinstance(r, str) else r for r in result]
+    else:
+        formatted_result = result
+
     log_data = {
         "tool": tool_name,
         "timestamp": datetime.now().isoformat(),
         "params": params,
-        "result": result if isinstance(result, (str, int, float, bool, list, dict)) else str(result),
+        "result": formatted_result,
     }
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(log_data, f, ensure_ascii=False, indent=2)
