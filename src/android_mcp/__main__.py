@@ -355,13 +355,13 @@ def get_layout_tree_tool(max_depth: int = 10, filter_class: str = None):
 
 @mcp.tool(
     name="GetElementDetails",
-    description="Get detailed properties of a single UI element. Locate by text, resourceId, className, or description. Returns bounds, text, content-desc, and all state flags.",
+    description="Get detailed properties of a single UI element. Locate by text, resourceId, or description. Returns bounds, text, content-desc, and all state flags.",
     annotations=ToolAnnotations(title="Get Element Details", readOnlyHint=True),
 )
 def get_element_details_tool(selector_type: str, selector_value: str, timeout: float = 5.0):
     device = require_device()
 
-    valid_selectors = {"text", "resourceId", "className", "description"}
+    valid_selectors = {"text", "resourceId", "description"}
     if selector_type not in valid_selectors:
         return f"Invalid selector_type '{selector_type}'. Must be one of: {', '.join(sorted(valid_selectors))}"
 
