@@ -11,6 +11,7 @@ from fastmcp.utilities.types import Image
 from mcp.types import ToolAnnotations
 
 from android_mcp.mobile.service import Mobile
+from android_mcp.tree.service import Tree
 
 parser = ArgumentParser()
 parser.add_argument("--device", type=str, help="ADB device serial or host:port")
@@ -197,6 +198,35 @@ def require_device():
     _connect_preferred_device()
     return mobile.get_device()
 
+def _filter_layout_tree(node, filter_class):
+    """Filter layout tree to only include nodes matching the given class name."""
+    from android_mcp.tree.views import LayoutNode
+
+    filtered_children = []
+    for child in node.children:
+        filtered_child = _filter_layout_tree(child, filter_class)
+        if filtered_child is not None:
+            filtered_children.append(filtered_child)
+
+    matches = filter_class.lower() in node.class_name.lower()
+    if matches or filtered_children:
+        return LayoutNode(
+            class_name=node.class_name,
+            resource_id=node.resource_id,
+            bounds=node.bounds,
+            text=node.text,
+            content_desc=node.content_desc,
+            enabled=node.enabled,
+            visible=node.visible,
+            clickable=node.clickable,
+            focused=node.focused,
+            checked=node.checked,
+            scrollable=node.scrollable,
+            depth=node.depth,
+            children=tuple(filtered_children),
+        )
+    return None
+
 def _resolve_resource_id(device, resource_id: str) -> str:
     """Auto-expand short resourceId (e.g. 'btn_login') to full form (e.g. 'com.example.app:id/btn_login') using the current foreground app package."""
     if not resource_id or '/' in resource_id or ':' in resource_id:
@@ -299,11 +329,32 @@ def state_tool(use_vision: bool = False, use_annotation: bool = True, include_la
     )
     result = [mobile_state.tree_state.to_string()]
     if include_layout and mobile_state.tree_state.layout_root:
-        from android_mcp.tree.service import Tree
         result.append(Tree.format_layout_tree(mobile_state.tree_state.layout_root))
     if use_vision:
         result.append(Image(data=mobile_state.screenshot, format="PNG"))
     return result
+
+
+@mcp.tool(
+    name="GetLayoutTree",
+    description="Get the full view hierarchy of the device screen as a tree of all UI elements (including containers like FrameLayout, LinearLayout, etc.). Useful for layout debugging and design review.",
+    annotations=ToolAnnotations(title="Get Layout Tree", readOnlyHint=True),
+)
+def get_layout_tree_tool(max_depth: int = 10, filter_class: str = None):
+    require_device()
+    xml_data = mobile.device.dump_hierarchy()
+    tree = Tree(mobile)
+    layout_root = tree.get_layout_tree(xml_data=xml_data, max_depth=max_depth)
+
+    if layout_root is None:
+        return "Failed to parse layout tree."
+
+    if filter_class:
+        layout_root = _filter_layout_tree(layout_root, filter_class)
+        if layout_root is None:
+            return f"No elements matching class '{filter_class}' found."
+
+    return Tree.format_layout_tree(layout_root)
 
 
 @mcp.tool(
