@@ -1,9 +1,12 @@
 from argparse import ArgumentParser
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from datetime import datetime
 from textwrap import dedent
 from typing import Literal, Optional
 import asyncio
+import functools
+import json
 import os
 
 from fastmcp import FastMCP
@@ -36,7 +39,42 @@ parser.add_argument(
     metavar="SERIAL",
     help="Use USB ADB. Optionally provide a specific device serial.",
 )
+parser.add_argument(
+    "--debug",
+    action="store_true",
+    help="Enable debug mode to log all tool calls to JSON files.",
+)
 args, _ = parser.parse_known_args()
+
+DEBUG_MODE = args.debug or os.getenv("ANDROID_MCP_DEBUG", "").lower() in ("1", "true", "yes")
+DEBUG_LOG_DIR = os.getenv("ANDROID_MCP_DEBUG_LOG_DIR", "debug_logs")
+
+
+def _log_tool_call(tool_name: str, params: dict, result) -> None:
+    if not DEBUG_MODE:
+        return
+    os.makedirs(DEBUG_LOG_DIR, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    filename = f"{tool_name}_{timestamp}.json"
+    filepath = os.path.join(DEBUG_LOG_DIR, filename)
+    log_data = {
+        "tool": tool_name,
+        "timestamp": datetime.now().isoformat(),
+        "params": params,
+        "result": result if isinstance(result, (str, int, float, bool, list, dict)) else str(result),
+    }
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(log_data, f, ensure_ascii=False, indent=2)
+
+
+def debug_tool(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        _log_tool_call(func.__name__, kwargs, result)
+        return result
+    return wrapper
+
 
 instructions = dedent(
     """
@@ -240,6 +278,7 @@ def _resolve_resource_id(device, resource_id: str) -> str:
     return resource_id
 
 @mcp.tool(name='ListDevices',description='List available ADB devices',annotations=ToolAnnotations(title="List Devices",readOnlyHint=True))
+@debug_tool
 def list_devices_tool():
     devices=Mobile.list_devices()
     if not devices:
@@ -248,6 +287,7 @@ def list_devices_tool():
     return "\n".join(lines)
 
 @mcp.tool(name='ConnectDevice',description='Connect to an ADB device by serial number',annotations=ToolAnnotations(title="Connect Device"))
+@debug_tool
 def connect_device_tool(serial:str):
     target = Mobile.normalize_wifi_serial(serial) if ":" in serial else serial
     if ":" in target:
@@ -260,6 +300,7 @@ def connect_device_tool(serial:str):
     description="Manage ADB devices (list, connect, or disconnect)",
     annotations=ToolAnnotations(title="Device"),
 )
+@debug_tool
 def device_tool(action: Literal["list", "connect", "disconnect"], serial: Optional[str] = None):
     if action == "list":
         devices = Mobile.list_devices()
@@ -293,6 +334,7 @@ def device_tool(action: Literal["list", "connect", "disconnect"], serial: Option
     description="Click on a specific cordinate",
     annotations=ToolAnnotations(title="Click", destructiveHint=True),
 )
+@debug_tool
 def click_tool(x: int, y: int):
     device = require_device()
     device.click(x, y)
@@ -300,6 +342,7 @@ def click_tool(x: int, y: int):
 
 
 @mcp.tool(name='ClickBySelector',description='Click on an element by selector (text, resourceId, className, description). More reliable than coordinate clicks — handles dynamic layouts and element reflow. At least one selector must be provided.',annotations=ToolAnnotations(title="Click By Selector",destructiveHint=True))
+@debug_tool
 def click_by_selector_tool(text:str=None,resourceId:str=None,className:str=None,description:str=None,index:int=0,timeout:float=5.0):
     device=require_device()
     kwargs={}
@@ -321,6 +364,7 @@ def click_by_selector_tool(text:str=None,resourceId:str=None,className:str=None,
     description="Get the state of the device. Optionally includes visual screenshot when use_vision=True. The use_annotation parameter (default True) can be set to False to get a clean screenshot without bounding boxes.",
     annotations=ToolAnnotations(title="Snapshot", readOnlyHint=True),
 )
+@debug_tool
 def state_tool(use_vision: bool = False, use_annotation: bool = True):
     require_device()
     mobile_state = mobile.get_state(
@@ -336,6 +380,7 @@ def state_tool(use_vision: bool = False, use_annotation: bool = True):
     description="Get the full view hierarchy of the device screen as a tree of all UI elements (including containers like FrameLayout, LinearLayout, etc.). Useful for layout debugging and design review.",
     annotations=ToolAnnotations(title="Get Layout Tree", readOnlyHint=True),
 )
+@debug_tool
 def get_layout_tree_tool(max_depth: int = 10, filter_class: str = None):
     require_device()
     xml_data = mobile.device.dump_hierarchy()
@@ -358,6 +403,7 @@ def get_layout_tree_tool(max_depth: int = 10, filter_class: str = None):
     description="Get detailed properties of a single UI element. Locate by text, resourceId, or description. Returns bounds, text, content-desc, and all state flags.",
     annotations=ToolAnnotations(title="Get Element Details", readOnlyHint=True),
 )
+@debug_tool
 def get_element_details_tool(selector_type: str, selector_value: str, timeout: float = 5.0):
     device = require_device()
 
@@ -431,6 +477,7 @@ def _find_element_by_selector(device, selector_type: str, selector_value: str, t
     description="Calculate spacing and alignment between two UI elements. Returns horizontal/vertical gaps, alignment, and padding if one element contains the other.",
     annotations=ToolAnnotations(title="Get Spacing", readOnlyHint=True),
 )
+@debug_tool
 def get_spacing_tool(
     selector_type_a: str, selector_value_a: str,
     selector_type_b: str, selector_value_b: str,
@@ -537,6 +584,7 @@ def get_spacing_tool(
     description="Long click on a specific cordinate",
     annotations=ToolAnnotations(title="Long Click", destructiveHint=True),
 )
+@debug_tool
 def long_click_tool(x: int, y: int):
     device = require_device()
     device.long_click(x, y)
@@ -548,6 +596,7 @@ def long_click_tool(x: int, y: int):
     description="Swipe on a specific cordinate",
     annotations=ToolAnnotations(title="Swipe", destructiveHint=True),
 )
+@debug_tool
 def swipe_tool(x1: int, y1: int, x2: int, y2: int):
     device = require_device()
     device.swipe(x1, y1, x2, y2)
@@ -559,6 +608,7 @@ def swipe_tool(x1: int, y1: int, x2: int, y2: int):
     description="Type on a specific cordinate",
     annotations=ToolAnnotations(title="Type", destructiveHint=True),
 )
+@debug_tool
 def type_tool(text: str, x: int, y: int, clear: bool = False):
     device = require_device()
     device.set_fastinput_ime(enable=True)
@@ -571,6 +621,7 @@ def type_tool(text: str, x: int, y: int, clear: bool = False):
     description="Drag from location and drop on another location",
     annotations=ToolAnnotations(title="Drag", destructiveHint=True),
 )
+@debug_tool
 def drag_tool(x1: int, y1: int, x2: int, y2: int):
     device = require_device()
     device.drag(x1, y1, x2, y2)
@@ -582,6 +633,7 @@ def drag_tool(x1: int, y1: int, x2: int, y2: int):
     description="Press on specific button on the device",
     annotations=ToolAnnotations(title="Press", destructiveHint=True),
 )
+@debug_tool
 def press_tool(button: str):
     device = require_device()
     device.press(button)
@@ -595,6 +647,7 @@ def press_tool(button: str):
         title="Notification", destructiveHint=True, idempotentHint=True
     ),
 )
+@debug_tool
 def notification_tool():
     device = require_device()
     device.open_notification()
@@ -606,6 +659,7 @@ def notification_tool():
     description="Wait for a specific amount of time",
     annotations=ToolAnnotations(title="Wait", destructiveHint=True, idempotentHint=True),
 )
+@debug_tool
 def wait_tool(duration: int):
     device = require_device()
     device.sleep(duration)
@@ -613,6 +667,7 @@ def wait_tool(duration: int):
 
 
 @mcp.tool(name='WaitForElement',description='Wait for an element to appear on screen. Use this instead of Wait when content is loading dynamically. Returns element info when found or error on timeout.',annotations=ToolAnnotations(title="Wait For Element",readOnlyHint=True))
+@debug_tool
 def wait_for_element_tool(text:str=None,resourceId:str=None,className:str=None,description:str=None,timeout:float=10.0):
     device=require_device()
     kwargs={}
