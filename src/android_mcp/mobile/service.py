@@ -122,15 +122,11 @@ class Mobile:
 
         return data.get('xml'), data.get('img')
 
-    def get_state(self, use_vision=False, as_bytes: bool = False, as_base64: bool = False, use_annotation: bool = True, include_layout: bool = False):
+    def get_state(self, use_vision=False, as_bytes: bool = False, as_base64: bool = False, use_annotation: bool = True):
         try:
             xml_data, screenshot_data = self.capture_data(use_vision=use_vision)
             tree = Tree(self)
             tree_state = tree.get_state(xml_data=xml_data)
-
-            if include_layout:
-                layout_root = tree.get_layout_tree(xml_data=xml_data)
-                tree_state.layout_root = layout_root
 
             if use_vision:
                 nodes = tree_state.interactive_elements

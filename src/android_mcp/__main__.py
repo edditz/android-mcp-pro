@@ -318,21 +318,17 @@ def click_by_selector_tool(text:str=None,resourceId:str=None,className:str=None,
 
 @mcp.tool(
     name="Snapshot",
-    description="Get the state of the device. Optionally includes visual screenshot when use_vision=True. The use_annotation parameter (default True) can be set to False to get a clean screenshot without bounding boxes. Set include_layout=True to get the full view hierarchy tree.",
+    description="Get the state of the device. Optionally includes visual screenshot when use_vision=True. The use_annotation parameter (default True) can be set to False to get a clean screenshot without bounding boxes.",
     annotations=ToolAnnotations(title="Snapshot", readOnlyHint=True),
 )
-def state_tool(use_vision: bool = False, use_annotation: bool = True, include_layout: bool = False):
+def state_tool(use_vision: bool = False, use_annotation: bool = True):
     require_device()
     mobile_state = mobile.get_state(
         use_vision=use_vision, use_annotation=use_annotation, as_bytes=True,
-        include_layout=include_layout,
     )
-    result = [mobile_state.tree_state.to_string()]
-    if include_layout and mobile_state.tree_state.layout_root:
-        result.append(Tree.format_layout_tree(mobile_state.tree_state.layout_root))
-    if use_vision:
-        result.append(Image(data=mobile_state.screenshot, format="PNG"))
-    return result
+    return [mobile_state.tree_state.to_string()] + (
+        [Image(data=mobile_state.screenshot, format="PNG")] if use_vision else []
+    )
 
 
 @mcp.tool(
