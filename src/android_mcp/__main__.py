@@ -408,6 +408,130 @@ def get_element_details_tool(selector_type: str, selector_value: str, timeout: f
     return "\n".join(lines)
 
 
+def _find_element_by_selector(device, selector_type: str, selector_value: str, timeout: float = 5.0):
+    valid_selectors = {"text", "resourceId", "description"}
+    if selector_type not in valid_selectors:
+        return None, f"Invalid selector_type '{selector_type}'. Must be one of: {', '.join(sorted(valid_selectors))}"
+
+    kwargs = {}
+    if selector_type == "resourceId":
+        kwargs["resourceId"] = _resolve_resource_id(device, selector_value)
+    else:
+        kwargs[selector_type] = selector_value
+
+    el = device(**kwargs)
+    if not el.wait(timeout=timeout):
+        return None, f"Element not found with {selector_type}='{selector_value}' within {timeout}s"
+
+    return el, None
+
+
+@mcp.tool(
+    name="GetSpacing",
+    description="Calculate spacing and alignment between two UI elements. Returns horizontal/vertical gaps, alignment, and padding if one element contains the other.",
+    annotations=ToolAnnotations(title="Get Spacing", readOnlyHint=True),
+)
+def get_spacing_tool(
+    selector_type_a: str, selector_value_a: str,
+    selector_type_b: str, selector_value_b: str,
+    timeout: float = 5.0,
+):
+    device = require_device()
+
+    el_a, err = _find_element_by_selector(device, selector_type_a, selector_value_a, timeout)
+    if err:
+        return f"Element A: {err}"
+
+    el_b, err = _find_element_by_selector(device, selector_type_b, selector_value_b, timeout)
+    if err:
+        return f"Element B: {err}"
+
+    bounds_a = el_a.info.get("bounds", {})
+    bounds_b = el_b.info.get("bounds", {})
+
+    a_left = bounds_a.get("left", 0)
+    a_top = bounds_a.get("top", 0)
+    a_right = bounds_a.get("right", 0)
+    a_bottom = bounds_a.get("bottom", 0)
+
+    b_left = bounds_b.get("left", 0)
+    b_top = bounds_b.get("top", 0)
+    b_right = bounds_b.get("right", 0)
+    b_bottom = bounds_b.get("bottom", 0)
+
+    density_dpi = device.info.get("displayDensityDpi", 160)
+    scale = density_dpi / 160
+
+    def to_dp(px):
+        return round(px / scale)
+
+    # Check containment
+    b_inside_a = b_left >= a_left and b_right <= a_right and b_top >= a_top and b_bottom <= a_bottom
+    a_inside_b = a_left >= b_left and a_right <= b_right and a_top >= b_top and a_bottom <= b_bottom
+
+    lines = [
+        f"element_a: [{a_left},{a_top}][{a_right},{a_bottom}]",
+        f"element_b: [{b_left},{b_top}][{b_right},{b_bottom}]",
+    ]
+
+    if b_inside_a:
+        lines.append("relationship: B is inside A")
+        lines.append(f"padding_left: {to_dp(b_left - a_left)}dp")
+        lines.append(f"padding_top: {to_dp(b_top - a_top)}dp")
+        lines.append(f"padding_right: {to_dp(a_right - b_right)}dp")
+        lines.append(f"padding_bottom: {to_dp(a_bottom - b_bottom)}dp")
+    elif a_inside_b:
+        lines.append("relationship: A is inside B")
+        lines.append(f"padding_left: {to_dp(a_left - b_left)}dp")
+        lines.append(f"padding_top: {to_dp(a_top - b_top)}dp")
+        lines.append(f"padding_right: {to_dp(b_right - a_right)}dp")
+        lines.append(f"padding_bottom: {to_dp(b_bottom - a_bottom)}dp")
+    else:
+        # Calculate gaps
+        if b_left >= a_right:
+            h_gap = b_left - a_right
+            h_dir = "B is right of A"
+        elif a_left >= b_right:
+            h_gap = a_left - b_right
+            h_dir = "A is right of B"
+        else:
+            h_gap = 0
+            h_dir = "overlapping horizontally"
+
+        if b_top >= a_bottom:
+            v_gap = b_top - a_bottom
+            v_dir = "B is below A"
+        elif a_top >= b_bottom:
+            v_gap = a_top - b_bottom
+            v_dir = "A is below B"
+        else:
+            v_gap = 0
+            v_dir = "overlapping vertically"
+
+        lines.append(f"relationship: separate")
+        lines.append(f"horizontal_gap: {to_dp(h_gap)}dp ({h_dir})")
+        lines.append(f"vertical_gap: {to_dp(v_gap)}dp ({v_dir})")
+
+    # Alignment
+    alignments = []
+    if a_left == b_left:
+        alignments.append("left-aligned")
+    if a_right == b_right:
+        alignments.append("right-aligned")
+    if abs((a_left + a_right) - (b_left + b_right)) <= 1:
+        alignments.append("center-aligned")
+    if a_top == b_top:
+        alignments.append("top-aligned")
+    if a_bottom == b_bottom:
+        alignments.append("bottom-aligned")
+    if abs((a_top + a_bottom) - (b_top + b_bottom)) <= 1:
+        alignments.append("middle-aligned")
+
+    lines.append(f"alignment: {', '.join(alignments) if alignments else 'none'}")
+
+    return "\n".join(lines)
+
+
 @mcp.tool(
     name="LongClick",
     description="Long click on a specific cordinate",
