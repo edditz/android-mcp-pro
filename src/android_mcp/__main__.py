@@ -379,6 +379,14 @@ def get_element_details_tool(selector_type: str, selector_value: str, timeout: f
     bounds = info.get("bounds", {})
     visible_bounds = info.get("visibleBounds", {})
 
+    density_dpi = device.info.get("displayDensityDpi", 160)
+    scale = density_dpi / 160
+
+    width_px = bounds.get("right", 0) - bounds.get("left", 0)
+    height_px = bounds.get("bottom", 0) - bounds.get("top", 0)
+    width_dp = round(width_px / scale)
+    height_dp = round(height_px / scale)
+
     lines = [
         f"class: {info.get('className', '')}",
         f"resource-id: {info.get('resourceName', '')}",
@@ -386,6 +394,7 @@ def get_element_details_tool(selector_type: str, selector_value: str, timeout: f
         f"content-desc: {info.get('contentDescription', '')}",
         f"bounds: [{bounds.get('left',0)},{bounds.get('top',0)}][{bounds.get('right',0)},{bounds.get('bottom',0)}]",
         f"visible-bounds: [{visible_bounds.get('left',0)},{visible_bounds.get('top',0)}][{visible_bounds.get('right',0)},{visible_bounds.get('bottom',0)}]",
+        f"size: {width_px}x{height_px}px ({width_dp}x{height_dp}dp)",
         f"enabled: {info.get('enabled', False)}",
         f"visible: {info.get('visible', True)}",
         f"clickable: {info.get('clickable', False)}",
