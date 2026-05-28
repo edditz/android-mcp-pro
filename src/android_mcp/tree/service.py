@@ -29,9 +29,27 @@ class Tree:
 
         element_tree = self.get_element_tree(xml_data=xml_data)
 
-        # Skip the <hierarchy> wrapper; start from the first child node
-        if element_tree.tag == 'hierarchy' and len(element_tree) > 0:
-            element_tree = element_tree[0]
+        # Skip the <hierarchy> wrapper
+        if element_tree.tag == 'hierarchy':
+            if len(element_tree) == 1:
+                element_tree = element_tree[0]
+            elif len(element_tree) > 1:
+                from xml.etree.ElementTree import Element
+                virtual_root = Element('node', {
+                    'class': 'hierarchy',
+                    'resource-id': '',
+                    'bounds': '[0,0][0,0]',
+                    'enabled': 'true',
+                    'visible-to-user': 'true',
+                    'clickable': 'false',
+                    'focused': 'false',
+                    'checked': 'false',
+                    'scrollable': 'false',
+                    'text': '',
+                    'content-desc': '',
+                })
+                virtual_root.extend(element_tree)
+                element_tree = virtual_root
 
         def parse_node(node, depth):
             bounds_match = re.search(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', node.get('bounds', ''))
