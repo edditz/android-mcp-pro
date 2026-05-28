@@ -389,7 +389,7 @@ def state_tool(use_vision: bool = False, use_annotation: bool = True):
     annotations=ToolAnnotations(title="Get Layout Tree", readOnlyHint=True),
 )
 @debug_tool
-def get_layout_tree_tool(max_depth: int = 10, filter_class: str = None):
+def get_layout_tree_tool(max_depth: int = 50, filter_class: str = None):
     require_device()
     xml_data = mobile.device.dump_hierarchy()
     tree = Tree(mobile)
