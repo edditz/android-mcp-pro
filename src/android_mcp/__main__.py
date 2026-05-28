@@ -358,6 +358,51 @@ def get_layout_tree_tool(max_depth: int = 10, filter_class: str = None):
 
 
 @mcp.tool(
+    name="GetElementDetails",
+    description="Get detailed properties of a single UI element. Locate by text, resourceId, className, or description. Returns bounds, text, content-desc, and all state flags.",
+    annotations=ToolAnnotations(title="Get Element Details", readOnlyHint=True),
+)
+def get_element_details_tool(selector_type: str, selector_value: str, timeout: float = 5.0):
+    device = require_device()
+
+    valid_selectors = {"text", "resourceId", "className", "description"}
+    if selector_type not in valid_selectors:
+        return f"Invalid selector_type '{selector_type}'. Must be one of: {', '.join(sorted(valid_selectors))}"
+
+    kwargs = {}
+    if selector_type == "resourceId":
+        kwargs["resourceId"] = _resolve_resource_id(device, selector_value)
+    else:
+        kwargs[selector_type] = selector_value
+
+    el = device(**kwargs)
+    if not el.wait(timeout=timeout):
+        return f"Element not found with {selector_type}='{selector_value}' within {timeout}s"
+
+    info = el.info
+    bounds = info.get("bounds", {})
+    visible_bounds = info.get("visibleBounds", {})
+
+    lines = [
+        f"class: {info.get('className', '')}",
+        f"resource-id: {info.get('resourceName', '')}",
+        f"text: {info.get('text', '')}",
+        f"content-desc: {info.get('contentDescription', '')}",
+        f"bounds: [{bounds.get('left',0)},{bounds.get('top',0)}][{bounds.get('right',0)},{bounds.get('bottom',0)}]",
+        f"visible-bounds: [{visible_bounds.get('left',0)},{visible_bounds.get('top',0)}][{visible_bounds.get('right',0)},{visible_bounds.get('bottom',0)}]",
+        f"enabled: {info.get('enabled', False)}",
+        f"visible: {info.get('visible', True)}",
+        f"clickable: {info.get('clickable', False)}",
+        f"focused: {info.get('focused', False)}",
+        f"checked: {info.get('checked', False)}",
+        f"scrollable: {info.get('scrollable', False)}",
+        f"selected: {info.get('selected', False)}",
+        f"package: {info.get('packageName', '')}",
+    ]
+    return "\n".join(lines)
+
+
+@mcp.tool(
     name="LongClick",
     description="Long click on a specific cordinate",
     annotations=ToolAnnotations(title="Long Click", destructiveHint=True),
