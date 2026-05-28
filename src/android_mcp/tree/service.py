@@ -67,6 +67,39 @@ class Tree:
 
         return parse_node(element_tree, 0)
 
+    @staticmethod
+    def format_layout_tree(root):
+        """Format a LayoutNode tree as indented text for AI consumption."""
+        lines = []
+
+        def format_node(node, indent=0):
+            prefix = "  " * indent
+            short_class = node.class_name.split('.')[-1] if '.' in node.class_name else node.class_name
+            parts = [f"[{node.depth}] {short_class}  {node.bounds.to_string()}"]
+
+            if node.resource_id:
+                parts.append(f"id={node.resource_id}")
+            if node.text:
+                parts.append(f"text={node.text}")
+            if node.content_desc:
+                parts.append(f"desc={node.content_desc}")
+            if node.clickable:
+                parts.append("clickable=true")
+            if node.scrollable:
+                parts.append("scrollable=true")
+            if node.focused:
+                parts.append("focused=true")
+            if node.checked:
+                parts.append("checked=true")
+
+            lines.append(prefix + "  ".join(parts))
+
+            for child in node.children:
+                format_node(child, indent + 1)
+
+        format_node(root)
+        return "\n".join(lines)
+
     def get_state(self, xml_data=None)->TreeState:
         interactive_elements=self.get_interactive_elements(xml_data=xml_data)
         return TreeState(interactive_elements=interactive_elements)

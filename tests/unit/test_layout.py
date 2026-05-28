@@ -140,3 +140,35 @@ def test_get_layout_tree_max_depth():
     assert len(root.children) == 1
     assert root.children[0].depth == 1
     assert root.children[0].children == ()
+
+
+def test_format_layout_tree():
+    """Test formatting LayoutNode tree as indented text."""
+    from android_mcp.tree.service import Tree
+
+    xml = """\
+    <hierarchy>
+      <node class="android.widget.FrameLayout" resource-id="root"
+            bounds="[0,0][100,200]" enabled="true" visible-to-user="true"
+            clickable="false" focused="false" checked="false"
+            scrollable="false" text="" content-desc="">
+        <node class="android.widget.TextView" resource-id="title"
+              bounds="[10,10][90,40]" enabled="true" visible-to-user="true"
+              clickable="true" focused="false" checked="false"
+              scrollable="false" text="Hello" content-desc=""/>
+      </node>
+    </hierarchy>"""
+
+    tree = Tree(mobile=None)
+    root = tree.get_layout_tree(xml_data=xml)
+    output = Tree.format_layout_tree(root)
+
+    assert "FrameLayout" in output
+    assert "TextView" in output
+    assert "text=Hello" in output
+    assert "clickable=true" in output
+    assert "id=root" in output
+    # Check indentation: child should be indented
+    lines = output.strip().split('\n')
+    assert lines[0].startswith('[0]')
+    assert lines[1].startswith('  [1]')
