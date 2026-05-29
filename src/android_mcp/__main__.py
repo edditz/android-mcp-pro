@@ -8,6 +8,7 @@ import asyncio
 import functools
 import json
 import os
+import re
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
@@ -294,6 +295,29 @@ def _resolve_resource_id(device, resource_id: str) -> str:
         return f'{pkg}:id/{resource_id}'
     return resource_id
 
+def _display_scale(device) -> float:
+    """Return the px-to-dp scale factor (density / 160).
+
+    uiautomator2's device.info has no displayDensityDpi key, so derive the
+    scale from displayWidth / displaySizeDpX (e.g. 1200 / 400 = 3.0). Falls
+    back to `wm density`, then to 1.0 if neither is available.
+    """
+    info = device.info
+    width_px = info.get("displayWidth")
+    width_dp = info.get("displaySizeDpX")
+    if width_px and width_dp:
+        return width_px / width_dp
+
+    try:
+        output = device.shell("wm density").output
+        match = re.search(r"(\d+)", output)
+        if match:
+            return int(match.group(1)) / 160
+    except Exception:
+        pass
+
+    return 1.0
+
 @mcp.tool(name='ListDevices',description='List available ADB devices',annotations=ToolAnnotations(title="List Devices",readOnlyHint=True))
 @debug_tool
 def list_devices_tool():
@@ -442,8 +466,7 @@ def get_element_details_tool(selector_type: str, selector_value: str, timeout: f
     bounds = info.get("bounds", {})
     visible_bounds = info.get("visibleBounds", {})
 
-    density_dpi = device.info.get("displayDensityDpi", 160)
-    scale = density_dpi / 160
+    scale = _display_scale(device)
 
     width_px = bounds.get("right", 0) - bounds.get("left", 0)
     height_px = bounds.get("bottom", 0) - bounds.get("top", 0)
@@ -523,8 +546,7 @@ def get_spacing_tool(
     b_right = bounds_b.get("right", 0)
     b_bottom = bounds_b.get("bottom", 0)
 
-    density_dpi = device.info.get("displayDensityDpi", 160)
-    scale = density_dpi / 160
+    scale = _display_scale(device)
 
     def to_dp(px):
         return round(px / scale)
