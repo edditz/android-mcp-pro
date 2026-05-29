@@ -1,7 +1,7 @@
 # JDWP Deep Layout Inspector
 
 **Date**: 2026-05-29
-**Status**: Draft (pending user review)
+**Status**: Spike PASSED — ready for implementation plan
 **Branch**: `feature/jdwp-deep-inspector`
 **Scope**: Add a JDWP-based deep layout retrieval path that exposes full View properties (padding, margin, elevation, textSize, corner radius, …) for AI-driven design walkthrough (设计走查), via a standalone Java helper invoked by the existing Python MCP.
 
@@ -21,13 +21,44 @@ Those properties are reachable through the **JDWP / DDM debug channel** (the sam
 | Failure behavior (deep) | **Fail with a clear error** — no silent fallback to the accessibility tree |
 | Java build | **Gradle + prebuilt fat-jar** (committed); end users need only a JRE, not Gradle |
 | Java language | **Plain Java** (lighter deps; port YALI's V1/V2 decode logic) |
-| dump mechanism | ddmlib `Client.dumpViewHierarchy(includeProperties=true)` (route α), with old-ddmlib fallback (route β) gated by a spike |
+| dump mechanism | ddmlib `Client.dumpViewHierarchy(includeProperties=true)`; **ddmlib 30.4.0 locked** (route β) after spike rejected 31.x — see Spike Results |
 
 ## Environment Facts (verified)
 
 - Target device: `ro.debuggable=1`, `ro.build.type=userdebug` → **every process exposes JDWP**, not just debug-built apps.
 - `ddmlib` jars already present in the local Gradle cache (30.3.0 … 31.13.1, with sources).
 - `adb 36.0.0`, Java available via jenv. No Gradle/Maven installed globally (Gradle wrapper will be vendored).
+
+## Spike Results (2026-05-29, route β locked)
+
+A throwaway Java spike (`/tmp/spike/Spike.java` + `Spike2.java`) ran the full chain against the live device (serial `8957c117`, foreground `com.miui.notes`). **The DDM view-dump path works and returns all target properties.**
+
+**ddmlib version: LOCK to 30.4.0** (route β), NOT 31.x:
+- 31.13.1's API is present but its dependency graph is polluted — it drags in `sdklib` + a **Kotlin runtime** (`kotlin.jvm.internal.Intrinsics`). The device-monitor thread crashes with `NoClassDefFoundError` and clients never populate.
+- 30.4.0 has a clean, small dependency set that works: `ddmlib`, `common`, `guava` (+ `failureaccess`), `protobuf-java`, `kxml2`.
+
+**API specifics discovered (must encode in implementation):**
+- Init requires `AdbInitOptions.builder().setClientSupportEnabled(true).build()` — without it, JDWP `Client`s are invisible.
+- `DebugViewDumpHandler` constructor takes a chunk-type int: use `CHUNK_VULW` for `listViewRoots`, `CHUNK_VURT` for `dumpViewHierarchy`.
+- `dumpViewHierarchy(window, skipChildren=false, includeProperties=true, useV2=true, handler)` returns **V2 binary** data.
+- The `Client` list populates **asynchronously**; poll until the target package's `Client` appears.
+- `client.getClientData().hasFeature(FEATURE_VIEW_HIERARCHY)` confirms support before dumping.
+
+**Verified properties present in the 242 KB V2 dump:** `padding`, `margin`, `elevation`, `textSize`, `alpha`, plus background corner radius (`BKG:rrect{...r:0.0}`), background color, `LayoutParams` subtype, and full class-inheritance chain. **All four target fields (padding/margin/elevation/textSize) confirmed.**
+
+**Timing (Spike2, notes already foreground) — corrects the earlier "cold start is slow" worry:**
+
+| Phase | Elapsed |
+|-------|---------|
+| bridge created | 61 ms |
+| device ready | 170 ms |
+| all clients enumerated + target found | 1811 ms |
+| dump round 1 / 2 / 3 | 79 / 51 / 69 ms |
+| **total cold-start → first dump done** | **~1.9 s** |
+
+A single dump is ~50–80 ms; the dominant cost is async client enumeration (~1.8 s). A second/third dump on a held connection is not meaningfully faster, because the dump itself is already fast. **Conclusion: the one-shot subprocess (~2 s total) is the right model for low-frequency design walkthrough — a long-lived daemon is not justified (YAGNI).** A recorded 242 KB V2 dump is saved as a parser test fixture.
+
+**Subprocess timeout**: normal path ~2 s; set a generous hard cap (e.g. **30 s**) to cover the edge case where the target app's process was just launched and its JDWP client has not yet attached. The earlier "JVM cold start 1–2 s is a bottleneck" note is removed — measurement shows it is not.
 
 ## Architecture
 
@@ -219,7 +250,7 @@ All errors are **clear text + non-crashing** (error ≠ exception that kills the
 2. **Multiple windows**: an app may have Activity + Dialog + Toast windows. Default = top/focused window; `--window` overrides. `GetLayoutTree` defaults to the focused window to avoid output explosion.
 3. **Coordinate accumulation pitfalls**: `scrollX/scrollY`, `translationX/Y`, GONE nodes affect absolute coords. CoordinateResolver handles scroll offset; GONE nodes (bounds may be 0) are emitted as-is, not forced.
 4. **Missing properties**: different View types expose different attributes (ImageView has no textSize). Missing fields → **omit the line**, no default value (a missing line beats a misleading "textSize=0").
-5. **JVM cold start**: ~1–2s per call. Design walkthrough is low-frequency, acceptable; tool description notes deep mode is slower so the AI has the right expectation.
+5. **Per-call latency**: measured ~2s total (cold start + bridge + async client enumeration + dump), see Spike Results. Design walkthrough is low-frequency, acceptable; tool description notes deep mode is slightly slower so the AI has the right expectation.
 6. **selector miss**: if selector can't be located in the JDWP tree → `ELEMENT_NOT_FOUND` text listing nearest candidates.
 
 ### Safety / resources
@@ -227,20 +258,14 @@ All errors are **clear text + non-crashing** (error ≠ exception that kills the
 - Subprocess has a **strict timeout + forced kill** to prevent a hung ddmlib from stalling the MCP.
 - Java helper is stateless, exits after use — no daemon, no port, no held device connection.
 
-## Spike (Step 0 — go/no-go gate)
+## Spike (Step 0 — go/no-go gate) — ✅ PASSED
 
-Before any production code, manually run the minimal chain to verify the ddmlib DDM view API still works in this environment:
+The go/no-go spike has been run; results are recorded above in **Spike Results**. Summary:
+- Route α (31.x) **rejected** — polluted dependency graph (Kotlin/sdklib) breaks the device monitor.
+- Route β (ddmlib **30.4.0**) **passed** — clean deps, full property dump (242 KB V2) including all four target fields. **Version locked to 30.4.0.**
+- Route γ (hand-rolled DDM decode) not needed.
 
-```
-connect device → find Client for com.miui.notes
-→ dumpViewHierarchy(includeProperties=true) → print raw tree showing padding
-```
-
-- **Pass** (padding/textSize visible) → route α holds; lock that ddmlib version; proceed.
-- **Fail** (API deprecated / no properties) → drop to route β (ddmlib 30.4.0), re-run spike; only if that also fails consider route γ (hand-rolled DDM `VURT`/`VUOP` decode).
-- The spike result is recorded here as the version-lock rationale.
-
-**If the spike does not pass, nothing else proceeds.** This is the project's single major unknown.
+The original go/no-go gate is satisfied; implementation may proceed.
 
 ## Testing Strategy
 
@@ -287,4 +312,4 @@ connect device → find Client for com.miui.notes
 ## Dependencies
 
 - **Python**: no new runtime deps (uses stdlib `subprocess`, `json`, existing `uiautomator2`/`fastmcp`).
-- **Java**: `com.android.tools.ddms:ddmlib` (version locked by spike), Gradle shadow plugin for fat-jar. Requires a JRE at runtime only in deep mode.
+- **Java**: `com.android.tools.ddms:ddmlib:30.4.0` (locked by spike) + transitive `common`, `guava` (+`failureaccess`), `protobuf-java`, `kxml2`. Gradle shadow plugin bundles them into the fat-jar. Requires a JRE at runtime only in deep mode.
