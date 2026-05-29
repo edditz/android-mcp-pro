@@ -46,11 +46,29 @@ def test_get_layout_tree_renders(monkeypatch):
     assert "textSize=42.0dp" in out
 
 
-def test_get_layout_tree_filter_class(monkeypatch):
-    prov = make_provider(monkeypatch)
-    out = prov.get_layout_tree(filter_class="ImageView")
-    assert "ImageView" in out
-    assert "TextView" not in out
+def test_get_layout_tree_filter_retains_ancestors(monkeypatch):
+    # tree: FrameLayout(container) > TextView(match). Filtering by TextView must KEEP
+    # the FrameLayout ancestor (consistent with AccessibilityProvider).
+    tree = {
+        "ok": True, "protocol": "V1", "package": "com.x", "window": "w",
+        "root": {
+            "class": "android.widget.FrameLayout", "hash": "r", "resourceId": "root",
+            "bounds": [0, 0, 100, 100], "text": "", "properties": {}, "children": [
+                {"class": "android.widget.TextView", "hash": "t", "resourceId": "label",
+                 "bounds": [0, 0, 100, 50], "text": "hi", "properties": {}, "children": []}
+            ],
+        },
+    }
+    prov = make_provider(monkeypatch, dump=tree)
+    out = prov.get_layout_tree(filter_class="TextView")
+    assert "TextView" in out
+    assert "FrameLayout" in out  # ancestor retained — matches AccessibilityProvider behavior
+
+
+def test_get_layout_tree_filter_no_match(monkeypatch):
+    prov = make_provider(monkeypatch)  # default DUMP (TextView>ImageView)
+    out = prov.get_layout_tree(filter_class="RecyclerView")
+    assert out == "No elements matching class 'RecyclerView' found."
 
 
 def test_get_element_details_by_resourceid(monkeypatch):

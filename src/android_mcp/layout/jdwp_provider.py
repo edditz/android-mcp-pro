@@ -16,26 +16,25 @@ def _json_to_node(obj: dict, depth: int) -> DeepLayoutNode:
     )
 
 
-def _collect_matching(node: DeepLayoutNode, needle: str, out: list) -> None:
-    """Collect all subtrees whose root matches the needle (class filter).
+def _filter(node: DeepLayoutNode, needle: str):
+    """Retain-ancestors filter mirroring AccessibilityProvider semantics.
 
-    Matching nodes are appended to *out* with depth reset to 0.
-    Non-matching nodes are recursed into so nested matches surface correctly.
+    Returns a (possibly child-pruned) copy of *node* if *node* matches the
+    needle OR any of its descendants do; returns None if the entire subtree
+    has no match.  Node depths are preserved as-is (consistent with
+    AccessibilityProvider which also keeps original depths).
     """
-    if needle.lower() in node.class_name.lower():
-        out.append(_reset_depth(node, 0))
-    else:
-        for c in node.children:
-            _collect_matching(c, needle, out)
-
-
-def _reset_depth(node: DeepLayoutNode, depth: int) -> DeepLayoutNode:
-    """Return a copy of *node* with depth reset and children depths adjusted."""
-    children = tuple(_reset_depth(c, depth + 1) for c in node.children)
-    return DeepLayoutNode(
-        class_name=node.class_name, resource_id=node.resource_id, bounds=node.bounds,
-        text=node.text, properties=node.properties, depth=depth, children=children,
+    filtered_children = tuple(
+        c for c in (_filter(ch, needle) for ch in node.children) if c is not None
     )
+    matches = needle.lower() in node.class_name.lower()
+    if matches or filtered_children:
+        return DeepLayoutNode(
+            class_name=node.class_name, resource_id=node.resource_id, bounds=node.bounds,
+            text=node.text, properties=node.properties, depth=node.depth,
+            children=filtered_children,
+        )
+    return None
 
 
 def _find(node: DeepLayoutNode, selector_type: str, value: str):
@@ -85,11 +84,9 @@ class JdwpProvider:
         except jdwp_runner.DeepDumpError as e:
             return f"[deep mode error: {e.error_type}] {e}"
         if filter_class:
-            matches: list[DeepLayoutNode] = []
-            _collect_matching(root, filter_class, matches)
-            if not matches:
+            root = _filter(root, filter_class)
+            if root is None:
                 return f"No elements matching class '{filter_class}' found."
-            return "\n".join(format_deep_tree(m) for m in matches)
         return format_deep_tree(root)
 
     def get_element_details(self, selector_type: str, selector_value: str, timeout: float = 5.0) -> str:
