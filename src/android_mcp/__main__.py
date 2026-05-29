@@ -16,7 +16,6 @@ from fastmcp.utilities.types import Image
 from mcp.types import ToolAnnotations
 
 from android_mcp.mobile.service import Mobile
-from android_mcp.tree.service import Tree
 from android_mcp.layout.accessibility_provider import AccessibilityProvider
 from android_mcp.layout.jdwp_provider import JdwpProvider
 
@@ -281,12 +280,17 @@ if _deep_mode:
         raise SystemExit(f"--deep requires deep-inspector.jar; not found at {_jar_path}. "
                          f"Build it with: cd java-deep-inspector && ./gradlew shadowJar")
 
+try:
+    _pref_serial = _configured_preference().serial
+except Exception:
+    _pref_serial = getattr(args, "device", None)
+
 layout_provider = build_provider(
     mobile,
     deep=_deep_mode,
     jar_path=_jar_path,
     adb_path=os.getenv("ADB_PATH", "adb"),
-    serial=getattr(args, "device", None),
+    serial=_pref_serial,
 )
 
 
@@ -294,34 +298,6 @@ def require_device():
     _connect_preferred_device()
     return mobile.get_device()
 
-def _filter_layout_tree(node, filter_class):
-    """Filter layout tree to only include nodes matching the given class name."""
-    from android_mcp.tree.views import LayoutNode
-
-    filtered_children = []
-    for child in node.children:
-        filtered_child = _filter_layout_tree(child, filter_class)
-        if filtered_child is not None:
-            filtered_children.append(filtered_child)
-
-    matches = filter_class.lower() in node.class_name.lower()
-    if matches or filtered_children:
-        return LayoutNode(
-            class_name=node.class_name,
-            resource_id=node.resource_id,
-            bounds=node.bounds,
-            text=node.text,
-            content_desc=node.content_desc,
-            enabled=node.enabled,
-            visible=node.visible,
-            clickable=node.clickable,
-            focused=node.focused,
-            checked=node.checked,
-            scrollable=node.scrollable,
-            depth=node.depth,
-            children=tuple(filtered_children),
-        )
-    return None
 
 def _resolve_resource_id(device, resource_id: str) -> str:
     """Auto-expand short resourceId (e.g. 'btn_login') to full form (e.g. 'com.example.app:id/btn_login') using the current foreground app package."""

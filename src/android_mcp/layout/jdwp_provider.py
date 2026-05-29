@@ -5,9 +5,11 @@ from android_mcp.layout import jdwp_runner
 def _json_to_node(obj: dict, depth: int) -> DeepLayoutNode:
     children = tuple(_json_to_node(c, depth + 1) for c in obj.get("children", []))
     b = obj.get("bounds", [0, 0, 0, 0])
+    raw_id = obj.get("resourceId", "")
+    resource_id = "" if raw_id == "NO_ID" else raw_id
     return DeepLayoutNode(
         class_name=obj.get("class", ""),
-        resource_id=obj.get("resourceId", ""),
+        resource_id=resource_id,
         bounds=tuple(b),
         text=obj.get("text", ""),
         properties=dict(obj.get("properties", {})),
@@ -73,10 +75,19 @@ class JdwpProvider:
 
     def _dump_root(self) -> DeepLayoutNode:
         device = self.mobile.get_device()
-        pkg = device.app_current().get("package", "")
+        try:
+            pkg = device.app_current().get("package", "")
+        except Exception:
+            pkg = ""
+        if not pkg:
+            raise jdwp_runner.DeepDumpError(
+                "could not determine foreground package", "DUMP_FAILED")
         data = jdwp_runner.run_deep_dump(
             self.jar_path, serial=self.serial, package=pkg, adb_path=self.adb_path)
-        return _json_to_node(data["root"], depth=0)
+        root_data = data.get("root")
+        if root_data is None:
+            raise jdwp_runner.DeepDumpError("response missing 'root' field", "DUMP_FAILED")
+        return _json_to_node(root_data, depth=0)
 
     def get_layout_tree(self, max_depth=None, filter_class=None) -> str:
         """Return the formatted deep layout tree.
@@ -115,4 +126,8 @@ class JdwpProvider:
                     if selector_type == "description" else "")
             return (f"ELEMENT_NOT_FOUND: no node with {selector_type}='{selector_value}'"
                     f"{note} in the deep tree.")
-        return _format_element(node)
+        result = _format_element(node)
+        if selector_type == "description":
+            result = ("note: deep mode has no content-desc; matched on text instead\n"
+                      + result)
+        return result

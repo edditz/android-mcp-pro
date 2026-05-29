@@ -107,3 +107,41 @@ def test_get_element_details_description_falls_back_to_text(monkeypatch):
     out = prov.get_element_details("description", "no-such-desc")
     assert "ELEMENT_NOT_FOUND" in out
     assert "content-desc" in out  # the explanatory note is present
+
+
+# Fix A tests
+def test_missing_root_field_returns_error(monkeypatch):
+    monkeypatch.setattr(jdwp_runner, "run_deep_dump", lambda *a, **k: {"ok": True})  # no "root"
+    prov = JdwpProvider(FakeMobile(), jar_path="/x.jar", adb_path="adb", serial="s")
+    out = prov.get_layout_tree()
+    assert "DUMP_FAILED" in out
+
+
+def test_app_current_failure_returns_error(monkeypatch):
+    class BadDevice:
+        def app_current(self): raise RuntimeError("adb lost")
+    class BadMobile:
+        def get_device(self): return BadDevice()
+    monkeypatch.setattr(jdwp_runner, "run_deep_dump", lambda *a, **k: {"ok": True, "root": {}})
+    prov = JdwpProvider(BadMobile(), jar_path="/x.jar", adb_path="adb", serial="s")
+    out = prov.get_layout_tree()
+    assert "DUMP_FAILED" in out
+
+
+# Fix B test
+def test_description_success_includes_note(monkeypatch):
+    prov = make_provider(monkeypatch)  # default DUMP: TextView text="标题"
+    out = prov.get_element_details("description", "标题")
+    assert "matched on text instead" in out
+    assert "android.widget.TextView" in out
+
+
+# Fix E test
+def test_no_id_sentinel_becomes_empty(monkeypatch):
+    node = {"class": "android.view.View", "hash": "h", "resourceId": "NO_ID",
+            "bounds": [0, 0, 1, 1], "text": "", "properties": {}, "children": []}
+    dump = {"ok": True, "root": node}
+    prov = make_provider(monkeypatch, dump=dump)
+    # element lookup for "NO_ID" must NOT match
+    out = prov.get_element_details("resourceId", "NO_ID")
+    assert "ELEMENT_NOT_FOUND" in out
