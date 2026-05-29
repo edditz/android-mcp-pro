@@ -90,6 +90,31 @@ Environment variables:
 - `ANDROID_MCP_HOST`: WiFi host
 - `SCREENSHOT_QUANTIZED`: set to `true` to reduce screenshot tokens
 
+### Deep Mode (full View properties)
+
+`--deep` enables a JDWP-based layout path that returns precise padding, margin,
+elevation, textSize, and corner-radius — properties the accessibility tree cannot
+provide. It requires a debuggable process (a debug-built app, or any app on a
+`userdebug` / `ro.debuggable=1` device) and a JDK/JRE on PATH.
+
+```json
+{
+  "mcpServers": {
+    "android-mcp-pro": {
+      "command": "uv",
+      "args": ["--directory", "</PATH/TO/android-mcp-pro>", "run", "android-mcp", "--deep"],
+      "env": { "ADB_PATH": "/path/to/adb" }
+    }
+  }
+}
+```
+
+The tool names are unchanged (`GetLayoutTree`, `GetElementDetails`); deep mode only
+changes the data source. Deep calls take ~2s and, if the target process is not
+debuggable, return a clear error rather than silently falling back. Deep mode is
+backed by a prebuilt Java helper at `prebuilt/deep-inspector.jar` (rebuild with
+`cd java-deep-inspector && ./gradlew shadowJar`).
+
 ## Available Tools
 
 ### Original Tools
