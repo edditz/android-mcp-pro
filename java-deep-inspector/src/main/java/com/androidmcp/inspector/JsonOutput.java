@@ -91,8 +91,14 @@ public class JsonOutput {
     }
 
     private static String numberOrQuote(String v) {
-        try { Double.parseDouble(v); return v; }
-        catch (NumberFormatException e) { return quote(v); }
+        try {
+            double d = Double.parseDouble(v);
+            // Java parses "NaN"/"Infinity" but those are NOT valid JSON — quote them.
+            if (!Double.isFinite(d)) return quote(v);
+            return v;
+        } catch (NumberFormatException e) {
+            return quote(v);
+        }
     }
 
     static String quote(String s) {
