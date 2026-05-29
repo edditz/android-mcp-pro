@@ -81,7 +81,7 @@ def test_get_element_details_by_resourceid(monkeypatch):
 def test_get_element_details_not_found(monkeypatch):
     prov = make_provider(monkeypatch)
     out = prov.get_element_details("resourceId", "does_not_exist")
-    assert "ELEMENT_NOT_FOUND" in out or "not" in out.lower()
+    assert "ELEMENT_NOT_FOUND" in out
 
 
 def test_deep_error_propagates_as_text(monkeypatch):
@@ -99,3 +99,11 @@ def test_real_fixture_parses(monkeypatch):
     out = prov.get_layout_tree()
     assert "[0]" in out  # at least the root renders
     assert "DecorView" in out
+
+
+def test_get_element_details_description_falls_back_to_text(monkeypatch):
+    prov = make_provider(monkeypatch)  # default DUMP: TextView text="标题"
+    # description lookup with a value that isn't any node's text → not found, with note
+    out = prov.get_element_details("description", "no-such-desc")
+    assert "ELEMENT_NOT_FOUND" in out
+    assert "content-desc" in out  # the explanatory note is present

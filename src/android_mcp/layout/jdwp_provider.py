@@ -79,6 +79,13 @@ class JdwpProvider:
         return _json_to_node(data["root"], depth=0)
 
     def get_layout_tree(self, max_depth=None, filter_class=None) -> str:
+        """Return the formatted deep layout tree.
+
+        filter_class filters by class-name substring (case-insensitive), retaining
+        ancestor containers of matches (consistent with normal mode).
+        max_depth is accepted for interface compatibility but is currently ignored in
+        deep mode — the full tree captured by the Java helper is always returned.
+        """
         try:
             root = self._dump_root()
         except jdwp_runner.DeepDumpError as e:
@@ -97,9 +104,15 @@ class JdwpProvider:
             root = self._dump_root()
         except jdwp_runner.DeepDumpError as e:
             return f"[deep mode error: {e.error_type}] {e}"
-        lookup_type = "resourceId" if selector_type == "resourceId" else "text"
+        if selector_type == "description":
+            # The JDWP deep tree does not capture content-description; fall back to text.
+            lookup_type = "text"
+        else:
+            lookup_type = selector_type
         node = _find(root, lookup_type, selector_value)
         if node is None:
-            return (f"ELEMENT_NOT_FOUND: no node with {selector_type}='{selector_value}' "
-                    f"in the deep tree.")
+            note = (" (note: deep mode has no content-desc; searched text instead)"
+                    if selector_type == "description" else "")
+            return (f"ELEMENT_NOT_FOUND: no node with {selector_type}='{selector_value}'"
+                    f"{note} in the deep tree.")
         return _format_element(node)
