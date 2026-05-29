@@ -17,6 +17,7 @@ from mcp.types import ToolAnnotations
 from android_mcp.mobile.service import Mobile
 from android_mcp.tree.service import Tree
 from android_mcp.layout.accessibility_provider import AccessibilityProvider
+from android_mcp.layout.jdwp_provider import JdwpProvider
 
 parser = ArgumentParser()
 parser.add_argument("--device", type=str, help="ADB device serial or host:port")
@@ -46,6 +47,10 @@ parser.add_argument(
     action="store_true",
     help="Enable debug mode to log all tool calls to JSON files.",
 )
+parser.add_argument("--deep", action="store_true",
+                    help="Enable JDWP deep layout mode (full View properties; requires debuggable process / userdebug device)")
+parser.add_argument("--deep-jar", type=str, default=None,
+                    help="Path to deep-inspector.jar (defaults to bundled prebuilt/deep-inspector.jar)")
 args, _ = parser.parse_known_args()
 
 DEBUG_MODE = args.debug or os.getenv("ANDROID_MCP_DEBUG", "").lower() in ("1", "true", "yes")
@@ -249,8 +254,33 @@ async def lifespan(app: FastMCP):
 
 mcp = FastMCP(name="Android-MCP", instructions=instructions)
 mobile = Mobile()
-# Selected in main() based on --deep; defaults to accessibility for safety.
-layout_provider = AccessibilityProvider(mobile)
+
+_DEFAULT_JAR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                            "prebuilt", "deep-inspector.jar")
+
+
+def build_provider(mobile, *, deep, jar_path, adb_path, serial):
+    if deep:
+        return JdwpProvider(mobile, jar_path=jar_path, adb_path=adb_path, serial=serial)
+    return AccessibilityProvider(mobile)
+
+
+layout_provider = build_provider(
+    mobile,
+    deep=getattr(args, "deep", False),
+    jar_path=getattr(args, "deep_jar", None) or _DEFAULT_JAR,
+    adb_path=os.getenv("ADB_PATH", "adb"),
+    serial=getattr(args, "device", None),
+)
+
+if getattr(args, "deep", False):
+    import shutil
+    _jar = getattr(args, "deep_jar", None) or _DEFAULT_JAR
+    if shutil.which("java") is None:
+        raise SystemExit("--deep requires a JDK/JRE on PATH, but 'java' was not found.")
+    if not os.path.isfile(_jar):
+        raise SystemExit(f"--deep requires deep-inspector.jar; not found at {_jar}. "
+                         f"Build it with: cd java-deep-inspector && ./gradlew shadowJar")
 
 
 def require_device():
