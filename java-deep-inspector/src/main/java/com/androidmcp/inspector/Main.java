@@ -3,19 +3,17 @@ package com.androidmcp.inspector;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.IDevice;
+import com.android.ddmlib.Log;
 
 public class Main {
     public static void main(String[] args) {
-        // Change A: Route ddmlib's logger to stderr before any ddmlib init,
-        // so its internal noise never reaches stdout.
-        com.android.ddmlib.Log.addLogger(new com.android.ddmlib.Log.ILogOutput() {
-            @Override
-            public void printLog(com.android.ddmlib.Log.LogLevel logLevel, String tag, String message) {
-                System.err.println(logLevel.getStringValue() + "/" + tag + ": " + message);
+        // Route ddmlib's own logging to stderr so stdout stays pure JSON.
+        Log.addLogger(new Log.ILogOutput() {
+            @Override public void printLog(Log.LogLevel l, String tag, String msg) {
+                System.err.println(l.getStringValue() + "/" + tag + ": " + msg);
             }
-            @Override
-            public void printAndPromptLog(com.android.ddmlib.Log.LogLevel logLevel, String tag, String message) {
-                System.err.println(logLevel.getStringValue() + "/" + tag + ": " + message);
+            @Override public void printAndPromptLog(Log.LogLevel l, String tag, String msg) {
+                System.err.println(l.getStringValue() + "/" + tag + ": " + msg);
             }
         });
 
@@ -28,14 +26,18 @@ public class Main {
                 case "--package": pkg = args[++i]; break;
                 case "--window": window = args[++i]; break;
                 case "--adb": adbPath = args[++i]; break;
-                case "--timeout-ms": timeoutMs = Long.parseLong(args[++i]); break;
+                case "--timeout-ms":
+                    String raw = args[++i];
+                    try {
+                        timeoutMs = Long.parseLong(raw);
+                    } catch (NumberFormatException nfe) {
+                        fail("--timeout-ms must be a number, got: " + raw, "BAD_ARGS");
+                    }
+                    break;
             }
         }
         if (pkg == null) {
-            System.out.println(JsonOutput.error("--package is required", "BAD_ARGS"));
-            System.out.flush();
-            safeTerminate();
-            Runtime.getRuntime().halt(1);
+            fail("--package is required", "BAD_ARGS");
         }
         try {
             DeviceConnector conn = new DeviceConnector(adbPath);
@@ -45,49 +47,40 @@ public class Main {
                 window = ViewHierarchyDumper.firstWindow(client, 10000);
             }
             if (window == null) {
-                System.out.println(JsonOutput.error("no window for " + pkg, "DUMP_FAILED"));
-                System.out.flush();
-                safeTerminate();
-                Runtime.getRuntime().halt(1);
+                fail("no window for " + pkg, "DUMP_FAILED");
             }
             String v1 = ViewHierarchyDumper.dumpV1(client, window, timeoutMs);
             if (v1 == null) {
-                System.out.println(JsonOutput.error("empty dump", "PROTOCOL_UNSUPPORTED"));
-                System.out.flush();
-                safeTerminate();
-                Runtime.getRuntime().halt(1);
+                fail("empty dump", "PROTOCOL_UNSUPPORTED");
             }
             ViewNode root = ViewNodeParser.parse(v1);
             if (root == null) {
-                System.out.println(JsonOutput.error("unparseable dump", "PROTOCOL_UNSUPPORTED"));
-                System.out.flush();
-                safeTerminate();
-                Runtime.getRuntime().halt(1);
+                fail("unparseable dump", "PROTOCOL_UNSUPPORTED");
             }
             CoordinateResolver.resolve(root);
-            // Change B: flush stdout then hard-exit so ddmlib daemon threads
-            // cannot append anything to stdout after the JSON line.
-            String json = JsonOutput.toJson(root, pkg, window, "V1");
-            System.out.println(json);
-            System.out.flush();
-            safeTerminate();
-            Runtime.getRuntime().halt(0);
+            succeed(JsonOutput.toJson(root, pkg, window, "V1"));
         } catch (DeviceConnector.NotFound nf) {
-            System.out.println(JsonOutput.error(nf.getMessage(), nf.errorType));
-            System.out.flush();
-            safeTerminate();
-            Runtime.getRuntime().halt(1);
+            fail(nf.getMessage(), nf.errorType);
         } catch (java.util.concurrent.TimeoutException te) {
-            System.out.println(JsonOutput.error("operation timed out", "TIMEOUT"));
-            System.out.flush();
-            safeTerminate();
-            Runtime.getRuntime().halt(1);
+            fail("operation timed out", "TIMEOUT");
         } catch (Exception e) {
-            System.out.println(JsonOutput.error(String.valueOf(e.getMessage()), "DUMP_FAILED"));
-            System.out.flush();
-            safeTerminate();
-            Runtime.getRuntime().halt(1);
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            fail(msg, "DUMP_FAILED");
         }
+    }
+
+    private static void succeed(String json) {
+        System.out.println(json);
+        System.out.flush();
+        safeTerminate();
+        Runtime.getRuntime().halt(0);
+    }
+
+    private static void fail(String message, String errorType) {
+        System.out.println(JsonOutput.error(message, errorType));
+        System.out.flush();
+        safeTerminate();
+        Runtime.getRuntime().halt(1);
     }
 
     // ddmlib's proxy thread may throw during terminate AFTER data is received; ignore.
