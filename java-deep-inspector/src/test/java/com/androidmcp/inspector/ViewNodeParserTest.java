@@ -45,4 +45,30 @@ class ViewNodeParserTest {
         for (ViewNode c : n.children) if (hasTextSize(c)) return true;
         return false;
     }
+
+    @Test
+    void siblingNodesAtSameDepth() {
+        String dump =
+            "android.widget.LinearLayout@aaa\n" +
+            " android.widget.TextView@bbb text:mText=3,one\n" +
+            " android.widget.TextView@ccc text:mText=3,two\n";
+        ViewNode root = ViewNodeParser.parse(dump);
+        assertEquals(2, root.children.size());
+        assertEquals("one", root.children.get(0).props.get("text:mText"));
+        assertEquals("two", root.children.get(1).props.get("text:mText"));
+    }
+
+    @Test
+    void truncatedValueStoresRemainderAndStops() {
+        // declared length 99 but only a few chars remain
+        String dump = "android.view.View@ddd text:mText=99,short\n";
+        ViewNode root = ViewNodeParser.parse(dump);
+        assertEquals("short", root.props.get("text:mText"));
+    }
+
+    @Test
+    void emptyAndNullInputReturnNull() {
+        assertNull(ViewNodeParser.parse(""));
+        assertNull(ViewNodeParser.parse(null));
+    }
 }

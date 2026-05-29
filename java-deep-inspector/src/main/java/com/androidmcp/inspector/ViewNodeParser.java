@@ -6,6 +6,7 @@ public class ViewNodeParser {
 
     /** Parse a V1 hierarchy text dump into a ViewNode tree. */
     public static ViewNode parse(String dump) {
+        if (dump == null || dump.isEmpty()) return null;
         String[] lines = dump.split("\n", -1);
         ViewNode root = null;
         Deque<ViewNode> stack = new ArrayDeque<>();
@@ -70,7 +71,13 @@ public class ViewNodeParser {
                 break;
             }
             int valStart = comma + 1;
-            int valEnd = Math.min(valStart + len, n);
+            if (valStart + len > n) {
+                // Malformed: declared length exceeds remaining content. Store what
+                // remains and stop — the rest of this line cannot be trusted.
+                node.props.put(key, content.substring(valStart, n));
+                break;
+            }
+            int valEnd = valStart + len;
             String value = content.substring(valStart, valEnd);
             node.props.put(key, value);
             i = valEnd;
