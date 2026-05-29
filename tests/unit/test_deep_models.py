@@ -1,3 +1,7 @@
+import dataclasses
+
+import pytest
+
 from android_mcp.layout.models import DeepLayoutNode, format_deep_tree
 
 
@@ -17,6 +21,8 @@ def test_node_is_frozen_and_holds_properties():
     n = _leaf()
     assert n.properties["paddingLeft"] == 48
     assert n.bounds == (61, 2427, 1139, 2598)
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        n.text = "mutated"
 
 
 def test_format_deep_tree_renders_property_lines():
@@ -40,3 +46,13 @@ def test_format_omits_absent_property_lines():
     out = format_deep_tree(n)
     assert "textSize" not in out
     assert "elevation" not in out
+
+
+def test_format_deep_tree_handles_three_levels():
+    leaf = _leaf(depth=2, resource_id="leaf", text="deep")
+    mid = _leaf(depth=1, resource_id="mid", text="", children=(leaf,))
+    root = _leaf(depth=0, resource_id="root", children=(mid,))
+    out = format_deep_tree(root)
+    lines = out.split("\n")
+    # the leaf header line should be indented 2 levels (4 spaces) and tagged [2]
+    assert any(line.startswith("    [2] TextView") and "id=leaf" in line for line in lines)

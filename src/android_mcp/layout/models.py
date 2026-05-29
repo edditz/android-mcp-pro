@@ -5,17 +5,19 @@ from dataclasses import dataclass
 class DeepLayoutNode:
     class_name: str
     resource_id: str
-    bounds: tuple  # absolute (left, top, right, bottom)
+    bounds: tuple[int, int, int, int]   # absolute (left, top, right, bottom)
     text: str
-    properties: dict  # all extracted props, e.g. paddingLeft, layout_marginTop, elevation, textSize
+    properties: dict[str, float | int | str]  # extracted props, e.g. paddingLeft, elevation, textSize
     depth: int
-    children: tuple  # tuple[DeepLayoutNode, ...]
+    children: tuple["DeepLayoutNode", ...]
 
 
 def _short_class(class_name: str) -> str:
     return class_name.rsplit(".", 1)[-1] if "." in class_name else class_name
 
 
+# A property line is emitted whenever the keys are PRESENT, even if all values are 0.
+# "Absent" (key not in dict) is intentionally distinct from "present and zero".
 def _padding_line(p: dict):
     keys = ("paddingLeft", "paddingTop", "paddingRight", "paddingBottom")
     if not any(k in p for k in keys):
