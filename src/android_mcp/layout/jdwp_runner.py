@@ -11,7 +11,7 @@ class DeepDumpError(Exception):
 
 
 def run_deep_dump(jar_path: str, *, serial: str, package: str,
-                  adb_path: str, window: str = None, timeout_s: float = 35.0) -> dict:
+                  adb_path: str, window: str | None = None, timeout_s: float = 35.0) -> dict:
     """Run the Java deep-inspector jar and return parsed JSON. Raises DeepDumpError on any failure."""
     if shutil.which("java") is None:
         raise DeepDumpError("java not found on PATH; deep mode requires a JDK/JRE", "NO_JAVA")
@@ -19,7 +19,7 @@ def run_deep_dump(jar_path: str, *, serial: str, package: str,
         raise DeepDumpError(f"deep-inspector jar not found at {jar_path}", "NO_JAR")
 
     cmd = ["java", "-jar", jar_path, "--package", package,
-           "--adb", adb_path, "--timeout-ms", str(int(timeout_s * 1000) - 5000)]
+           "--adb", adb_path, "--timeout-ms", str(max(1000, int(timeout_s * 1000) - 5000))]
     if serial:
         cmd += ["--serial", serial]
     if window:
