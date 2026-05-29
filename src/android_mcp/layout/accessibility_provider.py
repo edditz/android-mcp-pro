@@ -1,4 +1,6 @@
 import re
+from typing import Optional
+
 from android_mcp.tree.service import Tree
 
 
@@ -76,7 +78,7 @@ class AccessibilityProvider:
     def __init__(self, mobile):
         self.mobile = mobile
 
-    def get_layout_tree(self, max_depth=None, filter_class=None) -> str:
+    def get_layout_tree(self, max_depth: Optional[int] = None, filter_class: Optional[str] = None) -> str:
         device = self.mobile.device
         xml_data = device.dump_hierarchy()
         tree = Tree(self.mobile)

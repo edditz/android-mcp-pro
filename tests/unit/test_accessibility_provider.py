@@ -33,3 +33,16 @@ def test_get_layout_tree_filter_class():
     # The filter keeps ancestor containers that have matching descendants,
     # so FrameLayout appears as a wrapper around the matching TextView child.
     assert "Hello" in out
+
+
+def test_get_layout_tree_filter_class_no_match():
+    prov = AccessibilityProvider(FakeMobile())
+    out = prov.get_layout_tree(filter_class="RecyclerView")
+    assert out == "No elements matching class 'RecyclerView' found."
+
+
+def test_get_element_details_rejects_invalid_selector():
+    prov = AccessibilityProvider(FakeMobile())
+    result = prov.get_element_details("xpath", "//button")
+    assert "Invalid selector_type" in result
+    assert "xpath" in result
