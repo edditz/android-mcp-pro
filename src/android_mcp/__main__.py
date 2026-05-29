@@ -58,12 +58,21 @@ def _log_tool_call(tool_name: str, params: dict, result) -> None:
     filename = f"{tool_name}_{timestamp}.json"
     filepath = os.path.join(DEBUG_LOG_DIR, filename)
 
+    def _serializable(value):
+        if isinstance(value, str):
+            return value.split("\n")
+        try:
+            json.dumps(value)
+            return value
+        except TypeError:
+            return f"<{type(value).__name__} (not JSON serializable)>"
+
     if isinstance(result, str):
         formatted_result = result.split("\n")
     elif isinstance(result, list):
-        formatted_result = [r.split("\n") if isinstance(r, str) else r for r in result]
+        formatted_result = [_serializable(r) for r in result]
     else:
-        formatted_result = result
+        formatted_result = _serializable(result)
 
     log_data = {
         "tool": tool_name,
