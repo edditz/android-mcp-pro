@@ -394,11 +394,11 @@ def state_tool(use_vision: bool = False, use_annotation: bool = True):
 
 @mcp.tool(
     name="GetLayoutTree",
-    description="Get the full view hierarchy of the device screen as a tree of all UI elements (including containers like FrameLayout, LinearLayout, etc.). Useful for layout debugging and design review.",
+    description="Get the full view hierarchy of the device screen as a tree of all UI elements (including containers like FrameLayout, LinearLayout, etc.). Useful for layout debugging and design review. By default (max_depth omitted) the entire hierarchy is returned with no depth limit; pass max_depth to cap traversal depth.",
     annotations=ToolAnnotations(title="Get Layout Tree", readOnlyHint=True),
 )
 @debug_tool
-def get_layout_tree_tool(max_depth: int = 50, filter_class: str = None):
+def get_layout_tree_tool(max_depth: int = None, filter_class: str = None):
     require_device()
     xml_data = mobile.device.dump_hierarchy()
     tree = Tree(mobile)

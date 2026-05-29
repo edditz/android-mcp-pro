@@ -23,8 +23,11 @@ class Tree:
         tree_string = xml_data if xml_data else self.mobile.device.dump_hierarchy()
         return ElementTree.fromstring(tree_string)
 
-    def get_layout_tree(self, xml_data=None, max_depth=10):
-        """Parse full view hierarchy into a LayoutNode tree."""
+    def get_layout_tree(self, xml_data=None, max_depth=None):
+        """Parse full view hierarchy into a LayoutNode tree.
+
+        When max_depth is None, the entire hierarchy is traversed with no depth limit.
+        """
         from android_mcp.tree.views import LayoutNode, BoundingBox
 
         element_tree = self.get_element_tree(xml_data=xml_data)
@@ -63,7 +66,7 @@ class Tree:
             short_id = raw_id.split('/')[-1] if '/' in raw_id else raw_id
 
             children = ()
-            if depth < max_depth:
+            if max_depth is None or depth < max_depth:
                 child_nodes = [parse_node(child, depth + 1) for child in node]
                 children = tuple(c for c in child_nodes if c is not None)
 
