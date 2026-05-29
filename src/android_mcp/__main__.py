@@ -16,6 +16,7 @@ from mcp.types import ToolAnnotations
 
 from android_mcp.mobile.service import Mobile
 from android_mcp.tree.service import Tree
+from android_mcp.layout.accessibility_provider import AccessibilityProvider
 
 parser = ArgumentParser()
 parser.add_argument("--device", type=str, help="ADB device serial or host:port")
@@ -248,7 +249,6 @@ async def lifespan(app: FastMCP):
 
 mcp = FastMCP(name="Android-MCP", instructions=instructions)
 mobile = Mobile()
-from android_mcp.layout.accessibility_provider import AccessibilityProvider
 # Selected in main() based on --deep; defaults to accessibility for safety.
 layout_provider = AccessibilityProvider(mobile)
 
