@@ -21,6 +21,8 @@ public class CoordinateResolver {
         node.absRight = node.absLeft + width;
         node.absBottom = node.absTop + height;
 
+        // TODO: apply drawing:getTranslationX()/getTranslationY() when extended — currently
+        // only scroll offset is accounted for, matching the spec's initial scope.
         int scrollX = intProp(node, "scrolling:mScrollX");
         int scrollY = intProp(node, "scrolling:mScrollY");
         int childOriginLeft = node.absLeft - scrollX;
