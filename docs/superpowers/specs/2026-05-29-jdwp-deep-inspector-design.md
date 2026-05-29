@@ -20,7 +20,7 @@ Those properties are reachable through the **JDWP / DDM debug channel** (the sam
 | Tool surface | Tool **names/signatures stay identical**; a startup flag `--deep` routes to the JDWP implementation |
 | Failure behavior (deep) | **Fail with a clear error** — no silent fallback to the accessibility tree |
 | Java build | **Gradle + prebuilt fat-jar** (committed); end users need only a JRE, not Gradle |
-| Java language | **Plain Java** (lighter deps; port YALI's V1/V2 decode logic) |
+| Java language | **Plain Java** (lighter deps; V1 text parsing, see Protocol choice) |
 | dump mechanism | ddmlib `Client.dumpViewHierarchy(includeProperties=true)`; **ddmlib 30.4.0 locked** (route β) after spike rejected 31.x — see Spike Results |
 
 ## Environment Facts (verified)
@@ -60,6 +60,29 @@ A single dump is ~50–80 ms; the dominant cost is async client enumeration (~1.
 
 **Subprocess timeout**: normal path ~2 s; set a generous hard cap (e.g. **30 s**) to cover the edge case where the target app's process was just launched and its JDWP client has not yet attached. The earlier "JVM cold start 1–2 s is a bottleneck" note is removed — measurement shows it is not.
 
+### Protocol choice: V1 text, NOT V2 binary (Spike3)
+
+`dumpViewHierarchy(..., useV2)` accepts a flag. A follow-up spike (`Spike3`) requested **V1** (`useV2=false`) and the device returned a clean, fully-parseable **text** dump (~744 KB). **Decision: parse V1, not V2** — roughly 10× simpler, no `ViewHierarchyEncoder` binary decode, no string-table reconstruction.
+
+**V1 format:**
+- One line per node. Leading-space count = tree depth (nesting level).
+- `ClassName@hash key=LEN,VALUE key=LEN,VALUE …`
+- `LEN` is the byte length of `VALUE` — this disambiguates values that themselves contain spaces, commas, or newlines (the historical V1 parsing pitfall). The parser reads exactly `LEN` bytes for each value.
+- Keys are namespaced: `padding:mPaddingLeft`, `layout:mLeft`, `measurement:mMeasuredWidth`, `drawing:getElevation()`, `text:getTextSize()`, etc.
+
+**Confirmed keys for the four target fields (verified on a real TextView):**
+- textSize: `text:getTextSize()` (px) **and** `text:getScaledTextSize()` (sp — already density-adjusted)
+- padding: `padding:mPaddingLeft|mPaddingTop|mPaddingRight|mPaddingBottom`
+- margin: `layout:layout_leftMargin|topMargin|rightMargin|bottomMargin|startMargin|endMargin`
+- elevation: `drawing:getElevation()` (plus `drawing:getZ()`)
+- position/box: `layout:mLeft|mTop|mRight|mBottom`, `layout:getWidth()|getHeight()`, `measurement:mMeasuredWidth|mMeasuredHeight`
+- coordinate-resolution inputs: `scrolling:mScrollX|mScrollY`, `drawing:getTranslationX()|getTranslationY()`
+- corner radius: parsed from `BKG:rrect{Rect(...), r:N}` in the outline string
+
+A 100-line real V1 sample is saved at `tests/fixtures/v1_dump_sample.txt` as the parser unit-test fixture.
+
+> Note: ddmlib may log a harmless `NullPointerException` from its JDWP proxy thread during `AndroidDebugBridge.terminate()` **after** the dump data has already been received. The dump is complete and the process exits 0; the Java helper must not treat post-dump terminate noise as failure.
+
 ## Architecture
 
 ```
@@ -82,7 +105,7 @@ A single dump is ~50–80 ms; the dominant cost is async client enumeration (~1.
 │   input: device serial, package/pid, [window]            │
 │   ① ddmlib connect → find Client(process) → list Window   │
 │   ② Client.dumpViewHierarchy(includeProperties=true)      │
-│   ③ parse V1/V2 → ViewNode tree                           │
+│   ③ parse V1 text → ViewNode tree                         │
 │   ④ relative coords → absolute (cumulative)               │
 │   ⑤ emit unified JSON to stdout, exit                     │
 └─────────────────────────────────────────────────────────┘
@@ -139,14 +162,14 @@ java-deep-inspector/                 # in-repo standalone Gradle subproject
     ├── Main.java                    # CLI entry: parse args, orchestrate, emit JSON
     ├── DeviceConnector.java         # ddmlib connect, find Client, list Window
     ├── ViewHierarchyDumper.java     # call dumpViewHierarchy, get raw bytes
-    ├── ViewNodeParser.java          # V1/V2 decode (port from YALI)
+    ├── ViewNodeParser.java          # V1 text decode (indent depth + key=LEN,VALUE)
     ├── CoordinateResolver.java      # relative → absolute coords
     └── JsonOutput.java              # unified JSON serialization
 prebuilt/
 └── deep-inspector.jar               # committed prebuilt artifact
 ```
 
-- Plain Java; YALI's V1/V2 decode logic translated to Java.
+- Plain Java; V1 text parsing (indent depth + `key=LEN,VALUE`), see Protocol choice.
 - Fat-jar **prebuilt and committed** to `prebuilt/`; ordinary users run `java -jar prebuilt/deep-inspector.jar` with no Gradle. Gradle is needed only to rebuild after Java changes.
 - Jar path configurable in Python (env override + default relative path); missing jar or missing `java` → clear error at deep-mode startup.
 
@@ -164,7 +187,7 @@ JdwpProvider:
 deep-inspector (Java):
   ① DeviceConnector: connect serial → find Client by package → list Window
   ② ViewHierarchyDumper: client.dumpViewHierarchy(includeProperties=true)
-  ③ ViewNodeParser: V1/V2 → ViewNode tree (full property map)
+  ③ ViewNodeParser: V1 text → ViewNode tree (full property map)
   ④ CoordinateResolver: accumulate mLeft/mTop → absolute bounds
   ⑤ JsonOutput: serialize tree → stdout → exit 0
      failure → stderr reason, non-zero exit
@@ -183,7 +206,7 @@ JdwpProvider:
 ```json
 {
   "ok": true,
-  "protocol": "V2",
+  "protocol": "V1",
   "package": "com.miui.notes",
   "window": "com.miui.notes/...NotesEditActivity",
   "root": {
@@ -239,7 +262,7 @@ General mode omits property lines it has no data for; deep mode adds the padding
 | `PROCESS_NOT_FOUND` | no Client for package | "no JDWP client for X on device; may have just started, retry" |
 | `DUMP_FAILED` | dumpViewHierarchy empty/exception | "view dump failed; window may be SurfaceView / pure Compose" |
 | `TIMEOUT` | subprocess exceeds 15s | "deep capture timed out; device may be busy" |
-| `PROTOCOL_UNSUPPORTED` | API<23 / unsupported | "device API too low for V2 protocol" |
+| `PROTOCOL_UNSUPPORTED` | dump returned no/unparseable data | "device did not return a parseable view dump for this window" |
 | `ELEMENT_NOT_FOUND` | selector not located in JDWP tree | return text + list nearest candidate nodes |
 
 All errors are **clear text + non-crashing** (error ≠ exception that kills the MCP). The AI can decide to retry or switch tools.
@@ -270,7 +293,7 @@ The original go/no-go gate is satisfied; implementation may proceed.
 ## Testing Strategy
 
 ### Java
-- **Unit (JUnit)**: `ViewNodeParser` against a **recorded real byte sample** (a V2 dump captured during the spike, stored as a fixture); `CoordinateResolver` against constructed relative-coord trees (incl. scroll/translation edges). These are pure-logic, offline — the Java test focus.
+- **Unit (JUnit)**: `ViewNodeParser` against the **recorded real V1 text sample** (`tests/fixtures/v1_dump_sample.txt`); `CoordinateResolver` against constructed relative-coord trees (incl. scroll/translation edges). These are pure-logic, offline — the Java test focus.
 - **Integration**: dump a real device, manually verify a few known elements' padding against Android Studio Layout Inspector (semi-automatic, acceptance).
 
 ### Python
@@ -300,7 +323,8 @@ The original go/no-go gate is satisfied; implementation may proceed.
 | `java-deep-inspector/**` | NEW — Gradle subproject, ddmlib helper |
 | `prebuilt/deep-inspector.jar` | NEW — committed fat-jar |
 | `tests/unit/test_jdwp_provider.py` | NEW — Python unit tests with fixtures/mocks |
-| `tests/fixtures/*.json`, `*.bin` | NEW — recorded JSON / V2 byte samples |
+| `tests/fixtures/v1_dump_sample.txt` | NEW — recorded V1 text sample (parser fixture, already saved) |
+| `tests/fixtures/*.json` | NEW — recorded JdwpProvider JSON samples |
 
 ## Out of Scope (YAGNI)
 
