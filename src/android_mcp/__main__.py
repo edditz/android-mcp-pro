@@ -9,6 +9,7 @@ import functools
 import json
 import os
 import re
+import shutil
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
@@ -255,6 +256,9 @@ async def lifespan(app: FastMCP):
 mcp = FastMCP(name="Android-MCP", instructions=instructions)
 mobile = Mobile()
 
+# NOTE: resolves relative to the source checkout (repo_root/prebuilt/deep-inspector.jar).
+# Correct for `uv run`/`uvx` from source; a pip-installed wheel would need the jar bundled
+# inside the package instead (see docs/superpowers/specs — out of scope for now).
 _DEFAULT_JAR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
                             "prebuilt", "deep-inspector.jar")
 
@@ -265,22 +269,25 @@ def build_provider(mobile, *, deep, jar_path, adb_path, serial):
     return AccessibilityProvider(mobile)
 
 
+_deep_mode = getattr(args, "deep", False)
+_jar_path = getattr(args, "deep_jar", None) or _DEFAULT_JAR
+
+# Fail fast at startup so deep mode never silently degrades. Harmless during pytest
+# because --deep is never present in sys.argv during test collection.
+if _deep_mode:
+    if shutil.which("java") is None:
+        raise SystemExit("--deep requires a JDK/JRE on PATH, but 'java' was not found.")
+    if not os.path.isfile(_jar_path):
+        raise SystemExit(f"--deep requires deep-inspector.jar; not found at {_jar_path}. "
+                         f"Build it with: cd java-deep-inspector && ./gradlew shadowJar")
+
 layout_provider = build_provider(
     mobile,
-    deep=getattr(args, "deep", False),
-    jar_path=getattr(args, "deep_jar", None) or _DEFAULT_JAR,
+    deep=_deep_mode,
+    jar_path=_jar_path,
     adb_path=os.getenv("ADB_PATH", "adb"),
     serial=getattr(args, "device", None),
 )
-
-if getattr(args, "deep", False):
-    import shutil
-    _jar = getattr(args, "deep_jar", None) or _DEFAULT_JAR
-    if shutil.which("java") is None:
-        raise SystemExit("--deep requires a JDK/JRE on PATH, but 'java' was not found.")
-    if not os.path.isfile(_jar):
-        raise SystemExit(f"--deep requires deep-inspector.jar; not found at {_jar}. "
-                         f"Build it with: cd java-deep-inspector && ./gradlew shadowJar")
 
 
 def require_device():
