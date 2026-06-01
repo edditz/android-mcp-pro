@@ -252,7 +252,7 @@ async def lifespan(app: FastMCP):
     yield
 
 
-mcp = FastMCP(name="Android-MCP", instructions=instructions)
+mcp = FastMCP(name="Android-MCP-Pro", instructions=instructions)
 mobile = Mobile()
 
 # NOTE: resolves relative to the source checkout (repo_root/prebuilt/deep-inspector.jar).

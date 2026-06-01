@@ -1,15 +1,15 @@
 {
   "manifest_version": "0.4",
-  "name": "Android-MCP",
+  "name": "android-mcp-pro",
   "version": "0.2.0",
   "description": "Lightweight MCP Server for Android Operating System",
-  "long_description": "Android-MCP is a lightweight, open-source tool that bridge between AI agents and Android devices. Running as an MCP server, it lets LLM agents perform real-world tasks such as **app navigation, UI interaction and automated QA testing** without relying on traditional computer-vision pipelines or preprogramed scripts.\n\n**KEY FEATURES**\n- **Native Android Integration**: Interact with UI elements via ADB and the Android Accessibility API.\n- **Bring Your Own LLM/VLM**: Works with any language model.\n- **Rich Toolset for Mobile Automation**: Pre-built tools for gestures, keystrokes, capture, device state, etc.\n- **Real-Time Interaction**: Typical latency between actions ranges 2-4s.\n\n**MINIMUM REQUIREMENTS**\n- Python 3.13\n- Android Debug Bridge (ADB)\nEnsure ADB is installed and your device is connected/authorized.\n- UV Package Manager\nThis MCP server requires UV, a fast Python package manager.\nInstallation:\n`curl -LsSf https://astral.sh/uv/install.sh | sh`\nFor detailed installation instructions, [see the UV documentation](https://github.com/astral-sh/uv)\n\n**WINDOWS NOTE**\nUse Python 3.13 for `uvx` on Windows. Python 3.14 currently fails to resolve a transitive `pywin32` dependency from the MCP stack.",
+  "long_description": "Android MCP Pro is a lightweight, open-source tool that bridges AI agents and Android devices. Running as an MCP server, it lets LLM agents perform real-world tasks such as **app navigation, UI interaction and automated QA testing** without relying on traditional computer-vision pipelines or preprogramed scripts.\n\n**KEY FEATURES**\n- **Native Android Integration**: Interact with UI elements via ADB and the Android Accessibility API.\n- **Bring Your Own LLM/VLM**: Works with any language model.\n- **Rich Toolset for Mobile Automation**: Pre-built tools for gestures, keystrokes, capture, device state, etc.\n- **Real-Time Interaction**: Typical latency between actions ranges 2-4s.\n\n**MINIMUM REQUIREMENTS**\n- Python 3.13\n- Android Debug Bridge (ADB)\nEnsure ADB is installed and your device is connected/authorized.\n- UV Package Manager\nThis MCP server requires UV, a fast Python package manager.\nInstallation:\n`curl -LsSf https://astral.sh/uv/install.sh | sh`\nFor detailed installation instructions, [see the UV documentation](https://github.com/astral-sh/uv)\n\n**WINDOWS NOTE**\nUse Python 3.13 for `uvx` on Windows. Python 3.14 currently fails to resolve a transitive `pywin32` dependency from the MCP stack.",
   "author": {
-    "name": "CursorTouch",
-    "url": "https://cursortouch.com/"
+    "name": "Eddie",
+    "url": "https://github.com/edditz"
   },
-  "homepage": "https://cursortouch.com/",
-  "documentation": "https://github.com/CursorTouch/Android-MCP",
+  "homepage": "https://github.com/edditz/android-mcp-pro",
+  "documentation": "https://github.com/edditz/android-mcp-pro",
   "icon": "assets/logo.png",
   "server": {
     "type": "uv",
@@ -119,6 +119,6 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CursorTouch/Android-MCP"
+    "url": "https://github.com/edditz/android-mcp-pro"
   }
 }

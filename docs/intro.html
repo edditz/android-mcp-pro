@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Android MCP — Bridge AI Agents to Android Devices</title>
+<title>Android MCP Pro — Bridge AI Agents to Android Devices</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -206,7 +206,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
 <!-- ═══ NAVIGATION ═══ -->
 <nav id="nav">
   <div class="nav-inner">
-    <a href="#" class="nav-brand"><span class="dot"></span>Android MCP</a>
+    <a href="#" class="nav-brand"><span class="dot"></span>Android MCP Pro</a>
     <ul class="nav-links">
       <li><a href="#architecture" data-i18n="nav_architecture">Architecture</a></li>
       <li><a href="#config" data-i18n="nav_config">Configuration</a></li>
@@ -231,7 +231,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
     <p class="hero-desc animate delay-2" data-i18n="hero_desc">A lightweight, open-source MCP server that lets LLM agents perform real-world tasks on Android — app navigation, UI interaction, automated QA testing — without computer-vision pipelines or preprogrammed scripts.</p>
     <div class="hero-actions animate delay-3">
       <a href="#quickstart" class="btn btn-primary" data-i18n-html="hero_cta_primary">Get Started &rarr;</a>
-      <a href="https://github.com/CursorTouch/Android-MCP" class="btn btn-secondary" target="_blank" data-i18n="hero_cta_secondary">View on GitHub</a>
+      <a href="https://github.com/edditz/android-mcp-pro" class="btn btn-secondary" target="_blank" data-i18n="hero_cta_secondary">View on GitHub</a>
     </div>
     <div class="hero-stats animate delay-4">
       <div class="hero-stat"><span class="num">17</span><span class="label" data-i18n="stat_tools">MCP Tools</span></div>
@@ -319,7 +319,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
   <div class="section-inner">
     <p class="section-label" data-i18n="config_label">Configuration</p>
     <h2 class="section-title" data-i18n="config_title">Get Connected in Minutes</h2>
-    <p class="section-desc" data-i18n="config_desc">Android MCP supports flexible device targeting via CLI flags, environment variables, or the MCP bundle manifest's user_config schema.</p>
+    <p class="section-desc" data-i18n="config_desc">Android MCP Pro supports flexible device targeting via CLI flags, environment variables, or the MCP bundle manifest's user_config schema.</p>
 
     <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_req_title">Requirements</h3>
     <div class="req-list">
@@ -352,7 +352,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
   <span class="key">"mcpServers"</span>: {
     <span class="key">"android"</span>: {
       <span class="key">"command"</span>: <span class="str">"uv"</span>,
-      <span class="key">"args"</span>: [<span class="str">"--directory"</span>, <span class="str">"/path/to/Android-MCP"</span>, <span class="str">"run"</span>, <span class="str">"android-mcp"</span>],
+      <span class="key">"args"</span>: [<span class="str">"--directory"</span>, <span class="str">"/path/to/android-mcp-pro"</span>, <span class="str">"run"</span>, <span class="str">"android-mcp"</span>],
       <span class="key">"env"</span>: {
         <span class="key">"UV_NO_SYNC"</span>: <span class="str">"1"</span>,
         <span class="key">"ANDROID_MCP_DEVICE"</span>: <span class="str">"emulator-5554"</span>,
@@ -526,7 +526,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
 
     <div class="cli-list" style="margin-top:40px">
       <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> git clone https://github.com/CursorTouch/Android-MCP &amp;&amp; cd Android-MCP</div>
+        <div class="cli-cmd"><span class="prompt">$</span> git clone https://github.com/edditz/android-mcp-pro &amp;&amp; cd android-mcp-pro</div>
         <div class="cli-desc" data-i18n-html="qs_step1"><strong>Step 1.</strong> Clone the repository.</div>
       </div>
       <div class="cli-item">
@@ -564,7 +564,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
         <span class="badge">TREE</span>
       </div>
       <div class="config-body">
-<pre><span class="key">Android-MCP/</span>
+<pre><span class="key">android-mcp-pro/</span>
 <span class="comment">├──</span> src/android_mcp/
 <span class="comment">│   ├──</span> __main__.py          <span class="comment" data-i18n="tree_main"># MCP server entry point + 17 tool definitions</span>
 <span class="comment">│   ├──</span> mobile/
@@ -593,11 +593,10 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
 <!-- ═══ FOOTER ═══ -->
 <footer>
   <div class="footer-inner">
-    <p data-i18n="footer_text">Android MCP — Open-source under MIT License</p>
+    <p data-i18n="footer_text">Android MCP Pro — Open-source under MIT License</p>
     <div class="footer-links">
-      <a href="https://github.com/CursorTouch/Android-MCP">GitHub</a>
-      <a href="https://cursortouch.com/">CursorTouch</a>
-      <a href="https://github.com/CursorTouch/Android-MCP/issues" data-i18n="footer_issues">Issues</a>
+      <a href="https://github.com/edditz/android-mcp-pro">GitHub</a>
+      <a href="https://github.com/edditz/android-mcp-pro/issues" data-i18n="footer_issues">Issues</a>
     </div>
   </div>
 </footer>
@@ -656,7 +655,7 @@ const I18N = {
     // Config
     config_label: 'Configuration',
     config_title: 'Get Connected in Minutes',
-    config_desc: "Android MCP supports flexible device targeting via CLI flags, environment variables, or the MCP bundle manifest's user_config schema.",
+    config_desc: "Android MCP Pro supports flexible device targeting via CLI flags, environment variables, or the MCP bundle manifest's user_config schema.",
     config_req_title: 'Requirements',
     req_python_title: 'Python 3.13',
     req_python_desc: 'Strictly ≥3.13, <3.14',
@@ -778,7 +777,7 @@ const I18N = {
     tree_pyproject: '# Python package config',
 
     // Footer
-    footer_text: 'Android MCP — Open-source under MIT License',
+    footer_text: 'Android MCP Pro — Open-source under MIT License',
     footer_issues: 'Issues'
   },
 
@@ -833,7 +832,7 @@ const I18N = {
     // Config
     config_label: '配置',
     config_title: '几分钟内完成连接',
-    config_desc: 'Android MCP 支持通过 CLI 参数、环境变量或 MCP 包清单的 user_config 灵活指定目标设备。',
+    config_desc: 'Android MCP Pro 支持通过 CLI 参数、环境变量或 MCP 包清单的 user_config 灵活指定目标设备。',
     config_req_title: '环境要求',
     req_python_title: 'Python 3.13',
     req_python_desc: '严格要求 ≥3.13, <3.14',
@@ -955,7 +954,7 @@ const I18N = {
     tree_pyproject: '# Python 包配置',
 
     // Footer
-    footer_text: 'Android MCP — MIT 许可证开源',
+    footer_text: 'Android MCP Pro — MIT 许可证开源',
     footer_issues: '问题'
   }
 };
@@ -973,8 +972,8 @@ function setLang(lang) {
 
   // Update page title
   document.title = lang === 'zh'
-    ? 'Android MCP — 将 AI 智能体连接到 Android 设备'
-    : 'Android MCP — Bridge AI Agents to Android Devices';
+    ? 'Android MCP Pro — 将 AI 智能体连接到 Android 设备'
+    : 'Android MCP Pro — Bridge AI Agents to Android Devices';
 
   // Apply translations
   document.querySelectorAll('[data-i18n]').forEach(el => {

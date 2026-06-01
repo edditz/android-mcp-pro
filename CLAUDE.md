@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Android-MCP is a Python MCP (Model Context Protocol) server that bridges AI agents with Android devices via ADB. It exposes device-control tools (tap, swipe, type, screenshot, etc.) through the MCP protocol. This is **not** an Android app — it's a Python CLI tool that connects to Android devices over ADB.
+Android MCP Pro is a Python MCP (Model Context Protocol) server that bridges AI agents with Android devices via ADB. It exposes device-control tools (tap, swipe, type, screenshot, etc.) through the MCP protocol. This is **not** an Android app — it's a Python CLI tool that connects to Android devices over ADB.
 
 **Python version**: 3.13 (strictly `>=3.13,<3.14`)
 

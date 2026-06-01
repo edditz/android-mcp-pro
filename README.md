@@ -2,7 +2,7 @@
 
   <h1>🤖 Android MCP Pro</h1>
 
-  <a href="https://github.com/CursorTouch/Android-MCP/blob/main/LICENSE">
+  <a href="https://github.com/edditz/android-mcp-pro/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   </a>
   <img src="https://img.shields.io/badge/python-3.13-blue" alt="Python">

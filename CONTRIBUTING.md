@@ -1,6 +1,6 @@
-# Contributing to Android-MCP
+# Contributing to Android MCP Pro
 
-Thank you for your interest in contributing to Android-MCP! This document provides guidelines and instructions for contributing to this project.
+Thank you for your interest in contributing to Android MCP Pro! This document provides guidelines and instructions for contributing to this project.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ Thank you for your interest in contributing to Android-MCP! This document provid
 
 ### Development Environment
 
-Android-MCP requires:
+Android MCP Pro requires:
 - Python 3.13
 
 ### Installation from Source
@@ -35,8 +35,8 @@ Android-MCP requires:
 2. Clone your fork locally:
 
 ```bash
-git clone https://github.com/CursorTouch/Android-MCP.git
-cd Android-MCP
+git clone https://github.com/edditz/android-mcp-pro.git
+cd android-mcp-pro
 ```
 
 3. Install the package in development mode:
@@ -149,4 +149,4 @@ If you need help with your contribution:
 - Reach out to the maintainers
 - Check existing code for examples
 
-Thank you for contributing to Android-MCP!
+Thank you for contributing to Android MCP Pro!
