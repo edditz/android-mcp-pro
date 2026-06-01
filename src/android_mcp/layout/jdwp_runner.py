@@ -11,7 +11,8 @@ class DeepDumpError(Exception):
 
 
 def run_deep_dump(jar_path: str, *, serial: str, package: str,
-                  adb_path: str, window: str | None = None, timeout_s: float = 35.0) -> dict:
+                  adb_path: str, window: str | None = None, activity: str | None = None,
+                  timeout_s: float = 35.0) -> dict:
     """Run the Java deep-inspector jar and return parsed JSON. Raises DeepDumpError on any failure."""
     if shutil.which("java") is None:
         raise DeepDumpError("java not found on PATH; deep mode requires a JDK/JRE", "NO_JAVA")
@@ -24,6 +25,10 @@ def run_deep_dump(jar_path: str, *, serial: str, package: str,
         cmd += ["--serial", serial]
     if window:
         cmd += ["--window", window]
+    # Hint the jar toward the focused window: listViewRoots order does not guarantee the
+    # foreground window is first, so without this the dump can target a backgrounded Activity.
+    if activity:
+        cmd += ["--activity", activity]
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_s)

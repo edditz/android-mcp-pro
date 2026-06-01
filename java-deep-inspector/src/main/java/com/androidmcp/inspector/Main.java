@@ -18,13 +18,14 @@ public class Main {
         });
 
         String adbPath = System.getenv().getOrDefault("ADB_PATH", "adb");
-        String serial = null, pkg = null, window = null;
+        String serial = null, pkg = null, window = null, activity = null;
         long timeoutMs = 30000;
         for (int i = 0; i < args.length - 1; i++) {
             switch (args[i]) {
                 case "--serial": serial = args[++i]; break;
                 case "--package": pkg = args[++i]; break;
                 case "--window": window = args[++i]; break;
+                case "--activity": activity = args[++i]; break;
                 case "--adb": adbPath = args[++i]; break;
                 case "--timeout-ms":
                     String raw = args[++i];
@@ -44,7 +45,8 @@ public class Main {
             IDevice device = conn.connect(serial, timeoutMs);
             Client client = conn.findClient(device, pkg, timeoutMs);
             if (window == null) {
-                window = ViewHierarchyDumper.firstWindow(client, 10000);
+                java.util.List<String> windows = ViewHierarchyDumper.listWindows(client, 10000);
+                window = ViewHierarchyDumper.pickWindow(windows, activity);
             }
             if (window == null) {
                 fail("no window for " + pkg, "DUMP_FAILED");

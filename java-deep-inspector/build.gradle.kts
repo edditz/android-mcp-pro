@@ -28,4 +28,9 @@ tasks.shadowJar {
     archiveBaseName.set("deep-inspector")
     archiveClassifier.set("")
     archiveVersion.set("")
+    // Publish the fat-jar straight into the repo's prebuilt/ dir — the path the Python
+    // runtime loads (see _DEFAULT_JAR in src/android_mcp/__main__.py). This removes the
+    // separate "copy into prebuilt/" step: `./gradlew shadowJar` alone keeps the runtime
+    // jar current, so a Java change can never silently run against a stale artifact.
+    destinationDirectory.set(file("$rootDir/../prebuilt"))
 }

@@ -46,6 +46,15 @@ def test_get_layout_tree_renders(monkeypatch):
     assert "textSize=42.0dp" in out
 
 
+def test_get_layout_tree_header_includes_package_and_window(monkeypatch):
+    prov = make_provider(monkeypatch)  # DUMP has package="com.x", window="w"
+    out = prov.get_layout_tree()
+    header = out.splitlines()[0]
+    assert header.startswith("[window]")
+    assert "package=com.x" in header
+    assert "window=w" in header
+
+
 def test_get_layout_tree_filter_retains_ancestors(monkeypatch):
     # tree: FrameLayout(container) > TextView(match). Filtering by TextView must KEEP
     # the FrameLayout ancestor (consistent with AccessibilityProvider).

@@ -11,7 +11,7 @@ SAMPLE_XML = """<?xml version='1.0' encoding='UTF-8'?>
 class FakeDevice:
     def __init__(self): self.info = {"displayWidth": 1080, "displaySizeDpX": 360}
     def dump_hierarchy(self): return SAMPLE_XML
-    def app_current(self): return {"package": "com.x"}
+    def app_current(self): return {"package": "com.x", "activity": ".MainActivity"}
 
 
 class FakeMobile:
@@ -24,6 +24,15 @@ def test_get_layout_tree_includes_container_and_child():
     assert "FrameLayout" in out
     assert "TextView" in out
     assert "Hello" in out
+
+
+def test_get_layout_tree_includes_window_header():
+    prov = AccessibilityProvider(FakeMobile())
+    out = prov.get_layout_tree()
+    header = out.splitlines()[0]
+    assert header.startswith("[window]")
+    assert "package=com.x" in header
+    assert "activity=.MainActivity" in header
 
 
 def test_get_layout_tree_filter_class():

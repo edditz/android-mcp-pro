@@ -25,6 +25,7 @@ In addition to the original Android-MCP capabilities, this version adds:
 - **GetLayoutTree** - Full view hierarchy tree including containers (FrameLayout, LinearLayout, etc.) with `max_depth` and `filter_class` support
 - **GetElementDetails** - Detailed properties of a single element (bounds, text, state flags, size in dp)
 - **GetSpacing** - Calculate spacing and alignment between two elements, with automatic containment detection
+- **Deep Mode** - Opt-in JDWP-based layout path (`--deep`) that returns precise padding, margin, elevation, textSize, and corner-radius from the real View tree (see [Deep Mode](#deep-mode-full-view-properties))
 - **Debug Mode** - Log all tool calls to JSON files for inspection (`--debug` flag or `ANDROID_MCP_DEBUG=1`)
 
 ## Features (from original Android-MCP)
@@ -140,7 +141,7 @@ backed by a prebuilt Java helper at `prebuilt/deep-inspector.jar` (rebuild with
 
 | Tool | Description |
 |------|-------------|
-| `GetLayoutTree` | Full view hierarchy tree with `max_depth` and `filter_class` |
+| `GetLayoutTree` | Full view hierarchy tree with `max_depth` and `filter_class`; output starts with a `[window]` header naming the captured package/activity (plus JDWP window in deep mode) |
 | `GetElementDetails` | Detailed element properties (bounds, text, state, size in dp) |
 | `GetSpacing` | Spacing and alignment between two elements |
 

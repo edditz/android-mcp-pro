@@ -1,6 +1,7 @@
 import re
 from typing import Optional
 
+from android_mcp.layout.models import format_window_header
 from android_mcp.tree.service import Tree
 
 
@@ -92,7 +93,12 @@ class AccessibilityProvider:
             if layout_root is None:
                 return f"No elements matching class '{filter_class}' found."
 
-        return Tree.format_layout_tree(layout_root)
+        try:
+            current = device.app_current()
+            header = format_window_header(current.get("package", ""), current.get("activity", ""))
+        except Exception:
+            header = format_window_header("", "")
+        return header + "\n" + Tree.format_layout_tree(layout_root)
 
     def get_element_details(self, selector_type: str, selector_value: str,
                             timeout: float = 5.0) -> str:

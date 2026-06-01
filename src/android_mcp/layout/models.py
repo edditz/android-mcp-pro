@@ -12,6 +12,19 @@ class DeepLayoutNode:
     children: tuple["DeepLayoutNode", ...]
 
 
+def format_window_header(package: str, activity: str = "", window: str = "") -> str:
+    """One-line header identifying the captured window/Activity, for debugging.
+
+    Prepended to GetLayoutTree output so the caller can see exactly which
+    foreground page the tree was dumped from. `window` is the JDWP window token
+    (deep mode only); omitted for the accessibility path.
+    """
+    parts = [f"package={package or '<unknown>'}", f"activity={activity or '<unknown>'}"]
+    if window:
+        parts.append(f"window={window}")
+    return "[window] " + " ".join(parts)
+
+
 def _short_class(class_name: str) -> str:
     return class_name.rsplit(".", 1)[-1] if "." in class_name else class_name
 

@@ -1,4 +1,4 @@
-from android_mcp.layout.models import DeepLayoutNode, format_deep_tree
+from android_mcp.layout.models import DeepLayoutNode, format_deep_tree, format_window_header
 from android_mcp.layout import jdwp_runner
 
 
@@ -73,21 +73,31 @@ class JdwpProvider:
         self.adb_path = adb_path
         self.serial = serial
 
-    def _dump_root(self) -> DeepLayoutNode:
+    def _dump_root(self) -> tuple[DeepLayoutNode, dict]:
+        """Return (root node, metadata). Metadata carries package/activity/window
+        for the debug header."""
         device = self.mobile.get_device()
         try:
-            pkg = device.app_current().get("package", "")
+            current = device.app_current()
         except Exception:
-            pkg = ""
+            current = {}
+        pkg = current.get("package", "")
+        activity = current.get("activity", "")
         if not pkg:
             raise jdwp_runner.DeepDumpError(
                 "could not determine foreground package", "DUMP_FAILED")
         data = jdwp_runner.run_deep_dump(
-            self.jar_path, serial=self.serial, package=pkg, adb_path=self.adb_path)
+            self.jar_path, serial=self.serial, package=pkg, adb_path=self.adb_path,
+            activity=activity or None)
         root_data = data.get("root")
         if root_data is None:
             raise jdwp_runner.DeepDumpError("response missing 'root' field", "DUMP_FAILED")
-        return _json_to_node(root_data, depth=0)
+        meta = {
+            "package": data.get("package", pkg),
+            "activity": activity,
+            "window": data.get("window", ""),
+        }
+        return _json_to_node(root_data, depth=0), meta
 
     def get_layout_tree(self, max_depth=None, filter_class=None) -> str:
         """Return the formatted deep layout tree.
@@ -98,21 +108,22 @@ class JdwpProvider:
         deep mode — the full tree captured by the Java helper is always returned.
         """
         try:
-            root = self._dump_root()
+            root, meta = self._dump_root()
         except jdwp_runner.DeepDumpError as e:
             return f"[deep mode error: {e.error_type}] {e}"
         if filter_class:
             root = _filter(root, filter_class)
             if root is None:
                 return f"No elements matching class '{filter_class}' found."
-        return format_deep_tree(root)
+        header = format_window_header(meta["package"], meta["activity"], meta["window"])
+        return header + "\n" + format_deep_tree(root)
 
     def get_element_details(self, selector_type: str, selector_value: str, timeout: float = 5.0) -> str:
         valid = {"text", "resourceId", "description"}
         if selector_type not in valid:
             return f"Invalid selector_type '{selector_type}'. Must be one of: {', '.join(sorted(valid))}"
         try:
-            root = self._dump_root()
+            root, _meta = self._dump_root()
         except jdwp_runner.DeepDumpError as e:
             return f"[deep mode error: {e.error_type}] {e}"
         if selector_type == "description":
