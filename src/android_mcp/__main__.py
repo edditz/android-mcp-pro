@@ -16,6 +16,7 @@ from fastmcp.utilities.types import Image
 from mcp.types import ToolAnnotations
 
 from android_mcp.mobile.service import Mobile
+from android_mcp.jar_path import resolve_default_jar
 from android_mcp.layout.accessibility_provider import AccessibilityProvider
 from android_mcp.layout.jdwp_provider import JdwpProvider
 
@@ -255,11 +256,12 @@ async def lifespan(app: FastMCP):
 mcp = FastMCP(name="Android-MCP-Pro", instructions=instructions)
 mobile = Mobile()
 
-# NOTE: resolves relative to the source checkout (repo_root/prebuilt/deep-inspector.jar).
-# Correct for `uv run`/`uvx` from source; a pip-installed wheel would need the jar bundled
-# inside the package instead (see docs/superpowers/specs — out of scope for now).
-_DEFAULT_JAR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-                            "prebuilt", "deep-inspector.jar")
+# Resolve the bundled jar across both layouts: in-package (installed wheel, where
+# hatchling force-includes android_mcp/prebuilt/deep-inspector.jar) and repo-root
+# (editable/source checkout, where gradle's shadowJar writes prebuilt/).
+_PACKAGE_DIR = os.path.dirname(__file__)
+_REPO_ROOT = os.path.dirname(os.path.dirname(_PACKAGE_DIR))
+_DEFAULT_JAR = resolve_default_jar(package_dir=_PACKAGE_DIR, repo_root=_REPO_ROOT)
 
 
 def build_provider(mobile, *, deep, jar_path, adb_path, serial):

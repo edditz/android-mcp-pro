@@ -15,13 +15,13 @@ Android MCP Pro is a Python MCP (Model Context Protocol) server that bridges AI 
 uv sync
 
 # Run the MCP server locally
-uv run android-mcp
+uv run android-mcp-pro
 
 # Run as standalone tool (no local install)
-uvx android-mcp
+uvx android-mcp-pro
 
 # Run the MCP server with JDWP deep layout mode
-uv run android-mcp --deep
+uv run android-mcp-pro --deep
 
 # Run tests (pytest; unit tests live in tests/unit/)
 uv run pytest tests/

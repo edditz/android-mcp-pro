@@ -354,7 +354,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
       <div class="config-body">
 <pre><span class="comment" data-i18n="config_cc_cli_comment"># add the MCP server (user scope by default)</span>
 <span style="color:var(--accent)">$</span> claude mcp add android <span class="bool">-e</span> <span class="str">ANDROID_MCP_DEVICE=emulator-5554</span> \
-    -- uv --directory <span class="str">/path/to/android-mcp-pro</span> run android-mcp
+    -- uv --directory <span class="str">/path/to/android-mcp-pro</span> run android-mcp-pro
 
 <span class="comment" data-i18n="config_cc_cli_comment2"># verify it is registered and reachable</span>
 <span style="color:var(--accent)">$</span> claude mcp list</pre>
@@ -370,10 +370,32 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
   <span class="key">"mcpServers"</span>: {
     <span class="key">"android"</span>: {
       <span class="key">"command"</span>: <span class="str">"uv"</span>,
-      <span class="key">"args"</span>: [<span class="str">"--directory"</span>, <span class="str">"/path/to/android-mcp-pro"</span>, <span class="str">"run"</span>, <span class="str">"android-mcp"</span>],
+      <span class="key">"args"</span>: [<span class="str">"--directory"</span>, <span class="str">"/path/to/android-mcp-pro"</span>, <span class="str">"run"</span>, <span class="str">"android-mcp-pro"</span>],
       <span class="key">"env"</span>: {
         <span class="key">"ANDROID_MCP_DEVICE"</span>: <span class="str">"emulator-5554"</span>,
         <span class="key">"ANDROID_MCP_CONNECTION"</span>: <span class="str">"auto"</span>
+      }
+    }
+  }
+}</pre>
+      </div>
+    </div>
+
+    <h4 style="margin-top:28px;font-size:.95rem;font-weight:600" data-i18n="config_cc_git_title">Run via Git (no clone needed)</h4>
+    <p style="margin-top:8px;color:var(--text-secondary);font-size:.88rem;line-height:1.7" data-i18n-html="config_cc_git_desc">Don't want to clone the repo? Use <code>uvx --from git+...</code> to install and run directly from GitHub in a temporary environment.</p>
+    <div class="config-block" style="margin-top:12px">
+      <div class="config-header">
+        <h4><span style="color:var(--text-muted)">&#9632;</span> .mcp.json <span style="font-weight:400;color:var(--text-muted);font-size:.75rem" data-i18n="config_cc_git_label">— via Git, no local path</span></h4>
+        <span class="badge">JSON</span>
+      </div>
+      <div class="config-body">
+<pre>{
+  <span class="key">"mcpServers"</span>: {
+    <span class="key">"android-mcp-pro"</span>: {
+      <span class="key">"command"</span>: <span class="str">"uvx"</span>,
+      <span class="key">"args"</span>: [<span class="str">"--from"</span>, <span class="str">"git+https://github.com/edditz/android-mcp-pro"</span>, <span class="str">"android-mcp-pro"</span>],
+      <span class="key">"env"</span>: {
+        <span class="key">"ANDROID_MCP_DEVICE"</span>: <span class="str">"emulator-5554"</span>
       }
     }
   }
@@ -389,23 +411,23 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
     <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_cli_title">CLI Flags</h3>
     <div class="cli-list">
       <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --device emulator-5554</div>
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp-pro --device emulator-5554</div>
         <div class="cli-desc" data-i18n="cli_device_desc">Connect to a specific device by ADB serial number.</div>
       </div>
       <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --wifi 192.168.1.10</div>
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp-pro --wifi 192.168.1.10</div>
         <div class="cli-desc" data-i18n="cli_wifi_desc">Connect over Wi-Fi ADB. Port defaults to 5555 if omitted.</div>
       </div>
       <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --usb</div>
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp-pro --usb</div>
         <div class="cli-desc" data-i18n="cli_usb_desc">Force USB connection only. Auto-selects the first USB device.</div>
       </div>
       <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --deep</div>
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp-pro --deep</div>
         <div class="cli-desc" data-i18n="cli_deep_desc">Enable JDWP deep layout mode for full View properties (requires debuggable app).</div>
       </div>
       <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --debug</div>
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp-pro --debug</div>
         <div class="cli-desc" data-i18n="cli_debug_desc">Log all tool calls as JSON files for debugging.</div>
       </div>
     </div>
@@ -555,7 +577,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
         <div class="cli-desc" data-i18n-html="qs_step2"><strong>Step 2.</strong> Install Python dependencies (requires Python 3.13 and UV).</div>
       </div>
       <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --device &lt;serial&gt;</div>
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp-pro --device &lt;serial&gt;</div>
         <div class="cli-desc" data-i18n-html="qs_step3"><strong>Step 3.</strong> Start the MCP server. Replace &lt;serial&gt; with your device ID from adb devices.</div>
       </div>
     </div>
@@ -564,7 +586,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
       <div class="card">
         <div class="card-icon purple">R</div>
         <h4 data-i18n="qs_card_run_title">Run without Local Install</h4>
-        <p data-i18n="qs_card_run_desc">Use uvx android-mcp to run directly from PyPI without cloning the repo.</p>
+        <p data-i18n="qs_card_run_desc">Use uvx android-mcp-pro to run directly without cloning the repo.</p>
       </div>
       <div class="card">
         <div class="card-icon green">T</div>
@@ -690,6 +712,9 @@ const I18N = {
     config_cc_terminal: 'Terminal',
     config_cc_cli_comment: '# add the MCP server (user scope by default)',
     config_cc_cli_comment2: '# verify it is registered and reachable',
+    config_cc_git_title: 'Run via Git (no clone needed)',
+    config_cc_git_desc: 'Don\'t want to clone the repo? Use <code>uvx --from git+...</code> to install and run directly from GitHub in a temporary environment.',
+    config_cc_git_label: '— via Git, no local path',
     config_cc_note: 'No Java path setup is needed. The MCP server itself only requires Python &amp; UV. Deep mode (<code>--deep</code>) additionally needs <code>java</code> on your <code>PATH</code> — the path is auto-detected, not configured.',
     config_cli_title: 'CLI Flags',
     cli_device_desc: 'Connect to a specific device by ADB serial number.',
@@ -777,7 +802,7 @@ const I18N = {
     qs_step2: '<strong>Step 2.</strong> Install Python dependencies (requires Python 3.13 and UV).',
     qs_step3: '<strong>Step 3.</strong> Start the MCP server. Replace &lt;serial&gt; with your device ID from adb devices.',
     qs_card_run_title: 'Run without Local Install',
-    qs_card_run_desc: 'Use uvx android-mcp to run directly from PyPI without cloning the repo.',
+    qs_card_run_desc: 'Use uvx android-mcp-pro to run directly without cloning the repo.',
     qs_card_test_title: 'Run Tests',
     qs_card_test_desc: 'uv run pytest tests/ for Python unit tests. cd java-deep-inspector && ./gradlew test for Java.',
     qs_card_platform_title: 'Platform Support',
@@ -872,6 +897,9 @@ const I18N = {
     config_cc_terminal: '终端',
     config_cc_cli_comment: '# 添加 MCP 服务器(默认 user 作用域)',
     config_cc_cli_comment2: '# 验证是否注册成功且可连通',
+    config_cc_git_title: '通过 Git 运行(无需克隆)',
+    config_cc_git_desc: '不想克隆仓库？使用 <code>uvx --from git+...</code> 直接从 GitHub 安装并运行,自动创建临时环境。',
+    config_cc_git_label: '— 通过 Git,无需本地路径',
     config_cc_note: '无需配置 Java 路径。MCP 服务器本身只需 Python 和 UV。深度模式(<code>--deep</code>)额外需要 <code>java</code> 在你的 <code>PATH</code> 上 —— 路径会自动检测,无需手动指定。',
     config_cli_title: 'CLI 参数',
     cli_device_desc: '通过 ADB 序列号连接到指定设备。',
@@ -959,7 +987,7 @@ const I18N = {
     qs_step2: '<strong>第 2 步。</strong>安装 Python 依赖（需要 Python 3.13 和 UV）。',
     qs_step3: '<strong>第 3 步。</strong>启动 MCP 服务器。将 &lt;serial&gt; 替换为 adb devices 中的设备 ID。',
     qs_card_run_title: '无需本地安装即可运行',
-    qs_card_run_desc: '使用 uvx android-mcp 直接从 PyPI 运行，无需克隆仓库。',
+    qs_card_run_desc: '使用 uvx android-mcp-pro 直接运行，无需克隆仓库。',
     qs_card_test_title: '运行测试',
     qs_card_test_desc: 'uv run pytest tests/ 运行 Python 单元测试。cd java-deep-inspector && ./gradlew test 运行 Java 测试。',
     qs_card_platform_title: '平台支持',

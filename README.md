@@ -64,19 +64,68 @@ In addition to the original Android-MCP capabilities, this version adds:
            "--directory",
            "</PATH/TO/android-mcp-pro>",
            "run",
-           "android-mcp"
+           "android-mcp-pro"
          ]
        }
      }
    }
    ```
 
-   Claude Code:
+   Claude Code (project-scoped `.mcp.json`):
+   ```json
+   {
+     "mcpServers": {
+       "android-mcp-pro": {
+         "command": "uv",
+         "args": ["--directory", "</PATH/TO/android-mcp-pro>", "run", "android-mcp-pro"],
+         "env": {
+           "ANDROID_MCP_DEVICE": "emulator-5554"
+         }
+       }
+     }
+   }
+   ```
+
+   Or via CLI:
    ```shell
-   claude mcp add android-mcp-pro uv --directory </PATH/TO/android-mcp-pro> run android-mcp
+   claude mcp add android-mcp-pro \
+     -e ANDROID_MCP_DEVICE=emulator-5554 \
+     -- uv --directory </PATH/TO/android-mcp-pro> run android-mcp-pro
    ```
 
 3. **Restart Claude**
+
+### Run via Git (no local clone)
+
+If you don't want to clone the repo, you can run the MCP server directly from Git:
+
+**Prerequisites:**
+- Python 3.13
+- [UV](https://github.com/astral-sh/uv) (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
+- ADB on PATH (with a connected device)
+- For deep mode: Java (JDK/JRE) on PATH
+
+**One-liner:**
+```shell
+uvx --from git+https://github.com/edditz/android-mcp-pro android-mcp-pro
+```
+
+**Claude Code MCP config (`.mcp.json`):**
+```json
+{
+  "mcpServers": {
+    "android-mcp-pro": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/edditz/android-mcp-pro", "android-mcp-pro"],
+      "env": {
+        "ANDROID_MCP_DEVICE": "emulator-5554"
+      }
+    }
+  }
+}
+```
+
+This installs from Git into a temporary environment — no `git clone`, no `uv sync`. Deep mode (`--deep`) works because the jar is bundled inside the package.
 
 ### Device Selection
 
@@ -103,7 +152,7 @@ provide. It requires a debuggable process (a debug-built app, or any app on a
   "mcpServers": {
     "android-mcp-pro": {
       "command": "uv",
-      "args": ["--directory", "</PATH/TO/android-mcp-pro>", "run", "android-mcp", "--deep"],
+      "args": ["--directory", "</PATH/TO/android-mcp-pro>", "run", "android-mcp-pro", "--deep"],
       "env": { "ADB_PATH": "/path/to/adb" }
     }
   }
@@ -154,7 +203,7 @@ Enable debug logging to inspect all tool calls:
   "mcpServers": {
     "android-mcp-pro": {
       "command": "uv",
-      "args": ["--directory", "</PATH>", "run", "android-mcp", "--debug"],
+      "args": ["--directory", "</PATH>", "run", "android-mcp-pro", "--debug"],
       "env": {
         "ANDROID_MCP_DEBUG_LOG_DIR": "/path/to/debug_logs"
       }

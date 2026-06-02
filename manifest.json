@@ -20,7 +20,7 @@
         "--directory",
         "${__dirname}",
         "run",
-        "android-mcp"
+        "android-mcp-pro"
       ],
       "env": {
         "UV_NO_SYNC": "1",
