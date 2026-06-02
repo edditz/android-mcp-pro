@@ -215,7 +215,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
       <li><a href="#config" data-i18n="nav_config">Configuration</a></li>
       <li><a href="#tools" data-i18n="nav_tools">Tools</a></li>
       <li><a href="#deep" data-i18n-html="nav_deep">Deep Mode<span class="nav-badge">NEW</span></a></li>
-      <li><a href="#quickstart" data-i18n="nav_quickstart">Quick Start</a></li>
+      <li><a href="#design-review" data-i18n-html="nav_design_review">Design QA<span class="nav-badge">NEW</span></a></li>
       <li>
         <div class="lang-toggle">
           <button id="langEn" class="active" onclick="setLang('en')">EN</button>
@@ -233,7 +233,7 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
     <h1 class="animate delay-1" data-i18n-html="hero_title">Bridge AI <em>agents</em><br>to Android devices</h1>
     <p class="hero-desc animate delay-2" data-i18n="hero_desc">A lightweight, open-source MCP server that lets LLM agents perform real-world tasks on Android — app navigation, UI interaction, automated QA testing — without computer-vision pipelines or preprogrammed scripts.</p>
     <div class="hero-actions animate delay-3">
-      <a href="#quickstart" class="btn btn-primary" data-i18n-html="hero_cta_primary">Get Started &rarr;</a>
+      <a href="#config" class="btn btn-primary" data-i18n-html="hero_cta_primary">Get Started &rarr;</a>
       <a href="https://github.com/edditz/android-mcp-pro" class="btn btn-secondary" target="_blank" data-i18n="hero_cta_secondary">View on GitHub</a>
     </div>
     <div class="hero-stats animate delay-4">
@@ -561,49 +561,187 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
   </div>
 </section>
 
-<!-- ═══ QUICK START ═══ -->
-<section class="section" id="quickstart">
+<!-- ═══ DESIGN REVIEW ═══ -->
+<section class="section" id="design-review">
   <div class="section-inner">
-    <p class="section-label" data-i18n="qs_label">Quick Start</p>
-    <h2 class="section-title" data-i18n="qs_title">Up and Running in 3 Steps</h2>
+    <p class="section-label" data-i18n="dr_label">AI Skill</p>
+    <h2 class="section-title" data-i18n="dr_title">Automated Design QA (设计走查)</h2>
+    <p class="section-desc" data-i18n="dr_desc">A Claude Code skill that compares a live Android screen against its Figma design spec and produces a structured difference report — replacing tedious manual pixel-peeping with repeatable, evidence-based QA.</p>
 
-    <div class="cli-list" style="margin-top:40px">
-      <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> git clone https://github.com/edditz/android-mcp-pro &amp;&amp; cd android-mcp-pro</div>
-        <div class="cli-desc" data-i18n-html="qs_step1"><strong>Step 1.</strong> Clone the repository.</div>
+    <div class="flow" style="margin-top:48px">
+      <div class="flow-step">
+        <div class="icon purple">F</div>
+        <h5 data-i18n="dr_flow_figma_title">Figma Spec</h5>
+        <p data-i18n="dr_flow_figma_desc">Design frame</p>
       </div>
-      <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv sync</div>
-        <div class="cli-desc" data-i18n-html="qs_step2"><strong>Step 2.</strong> Install Python dependencies (requires Python 3.13 and UV).</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="icon blue">AI</div>
+        <h5 data-i18n="dr_flow_skill_title">Design Review</h5>
+        <p data-i18n="dr_flow_skill_desc">Claude Code Skill</p>
       </div>
-      <div class="cli-item">
-        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp-pro --device &lt;serial&gt;</div>
-        <div class="cli-desc" data-i18n-html="qs_step3"><strong>Step 3.</strong> Start the MCP server. Replace &lt;serial&gt; with your device ID from adb devices.</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="icon green">D</div>
+        <h5 data-i18n="dr_flow_device_title">Android Device</h5>
+        <p data-i18n="dr_flow_device_desc">Live screen</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="icon amber">R</div>
+        <h5 data-i18n="dr_flow_report_title">QA Report</h5>
+        <p data-i18n="dr_flow_report_desc">Findings + fixes</p>
       </div>
     </div>
 
-    <div class="cards" style="margin-top:40px">
+    <h3 style="margin-top:56px;font-family:var(--font-display);font-size:1.3rem" data-i18n="dr_how_title">How It Works</h3>
+    <div class="cards" style="margin-top:20px">
       <div class="card">
-        <div class="card-icon purple">R</div>
-        <h4 data-i18n="qs_card_run_title">Run without Local Install</h4>
-        <p data-i18n="qs_card_run_desc">Use uvx android-mcp-pro to run directly without cloning the repo.</p>
+        <div class="card-icon purple">1</div>
+        <h4 data-i18n="dr_step1_title">Pull Design Spec</h4>
+        <p data-i18n="dr_step1_desc">Fetches the target Figma frame via FigRelay MCP — layout, spacing tokens, colors, typography, and component hierarchy.</p>
       </div>
       <div class="card">
-        <div class="card-icon green">T</div>
-        <h4 data-i18n="qs_card_test_title">Run Tests</h4>
-        <p data-i18n="qs_card_test_desc">uv run pytest tests/ for Python unit tests. cd java-deep-inspector &amp;&amp; ./gradlew test for Java.</p>
+        <div class="card-icon green">2</div>
+        <h4 data-i18n="dr_step2_title">Capture Live Screen</h4>
+        <p data-i18n="dr_step2_desc">Uses android-mcp-pro to Snapshot the device, GetLayoutTree for hierarchy, and GetElementDetails / GetSpacing for precise measurements.</p>
       </div>
       <div class="card">
-        <div class="card-icon teal">P</div>
-        <h4 data-i18n="qs_card_platform_title">Platform Support</h4>
-        <p data-i18n="qs_card_platform_desc">Works on macOS, Linux, and Windows. On Windows, use Python 3.13 (3.14 has a known pywin32 dependency issue).</p>
+        <div class="card-icon amber">3</div>
+        <h4 data-i18n="dr_step3_title">Align & Diff</h4>
+        <p data-i18n="dr_step3_desc">Matches design nodes to device elements by text, resource-id, or position. Diffs spacing, typography, color, and layout with configurable tolerances.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon teal">4</div>
+        <h4 data-i18n="dr_step4_title">Generate Report</h4>
+        <p data-i18n="dr_step4_desc">Outputs a Markdown report (human-readable) + JSON (machine-readable) with severity levels, pass counts, and actionable fix hints.</p>
       </div>
     </div>
 
-    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="qs_structure_title">Project Structure</h3>
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="dr_dimensions_title">Review Dimensions</h3>
+    <div class="tools-grid" style="margin-top:20px">
+      <div class="tool-item" style="cursor:default">
+        <span class="tool-name" data-i18n="dr_dim_spacing">Spacing & Size</span>
+        <span class="tool-desc" data-i18n="dr_dim_spacing_desc">Padding, margin, width/height, inter-element gaps. Tolerance: ±1dp</span>
+        <span class="tool-tag ro" data-i18n="dr_tol">±1dp</span>
+      </div>
+      <div class="tool-item" style="cursor:default">
+        <span class="tool-name" data-i18n="dr_dim_typo">Typography</span>
+        <span class="tool-desc" data-i18n="dr_dim_typo_desc">Text size (sp), text color (#AARRGGBB), font weight, actual text string</span>
+        <span class="tool-tag rw" data-i18n="dr_exact">Exact</span>
+      </div>
+      <div class="tool-item" style="cursor:default">
+        <span class="tool-name" data-i18n="dr_dim_color">Color & Shape</span>
+        <span class="tool-desc" data-i18n="dr_dim_color_desc">Background color, corner radius, elevation/shadow, borders</span>
+        <span class="tool-tag rw" data-i18n="dr_exact">Exact</span>
+      </div>
+      <div class="tool-item" style="cursor:default">
+        <span class="tool-name" data-i18n="dr_dim_layout">Layout & Content</span>
+        <span class="tool-desc" data-i18n="dr_dim_layout_desc">Element presence (missing/extra), hierarchy, alignment, visible copy</span>
+        <span class="tool-tag meta" data-i18n="dr_binary">Binary</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="dr_severity_title">Severity Levels</h3>
+    <div class="req-list" style="margin-top:16px">
+      <div class="req-item">
+        <div class="req-icon" style="background:#FFF0F0;color:#C43D3D">!</div>
+        <div class="req-text"><h5 data-i18n="dr_sev_critical_title">Critical</h5><p data-i18n="dr_sev_critical_desc">Wrong/missing text, missing element, wrong color</p></div>
+      </div>
+      <div class="req-item">
+        <div class="req-icon" style="background:#FFF8E8;color:#A67C00">!!</div>
+        <div class="req-text"><h5 data-i18n="dr_sev_major_title">Major</h5><p data-i18n="dr_sev_major_desc">Spacing/size/font deviation beyond tolerance</p></div>
+      </div>
+      <div class="req-item">
+        <div class="req-icon" style="background:#E8F8EF;color:#2D8A56">~</div>
+        <div class="req-text"><h5 data-i18n="dr_sev_minor_title">Minor</h5><p data-i18n="dr_sev_minor_desc">Subtle deviations within tolerance, slight shadows</p></div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="dr_usage_title">Usage</h3>
+    <p style="margin-top:12px;color:var(--text-secondary);font-size:.92rem;line-height:1.7" data-i18n-html="dr_usage_desc">Trigger the skill by saying any of these to Claude Code while the device is on the target screen and the Figma frame is selected:</p>
+    <div class="cli-list" style="margin-top:16px">
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">></span> 帮我走查这个页面</div>
+        <div class="cli-desc" data-i18n="dr_trigger1">Trigger in Chinese — "help me QA this page"</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">></span> design review this screen against the Figma</div>
+        <div class="cli-desc" data-i18n="dr_trigger2">Trigger in English — compare current screen to Figma selection</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">></span> 对比设计稿和真机的还原度</div>
+        <div class="cli-desc" data-i18n="dr_trigger3">Trigger in Chinese — "compare design vs real device fidelity"</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="dr_prereq_title">Prerequisites</h3>
+    <div class="req-list" style="margin-top:16px">
+      <div class="req-item">
+        <div class="req-icon" style="background:var(--accent-light);color:var(--accent)">M</div>
+        <div class="req-text"><h5 data-i18n="dr_prereq_mcp_title">android-mcp-pro</h5><p data-i18n="dr_prereq_mcp_desc">Connected device (--deep for full coverage)</p></div>
+      </div>
+      <div class="req-item">
+        <div class="req-icon" style="background:#F3EEFF;color:#6B4FA0">F</div>
+        <div class="req-text"><h5 data-i18n="dr_prereq_figma_title">Figma MCP</h5><p data-i18n="dr_prereq_figma_desc">FigRelay, Figma Dev Mode, or Framelink</p></div>
+      </div>
+      <div class="req-item">
+        <div class="req-icon" style="background:#E8F8EF;color:#2D8A56">C</div>
+        <div class="req-text"><h5 data-i18n="dr_prereq_claude_title">Claude Code</h5><p data-i18n="dr_prereq_claude_desc">With design-review skill installed</p></div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="dr_report_title">Sample Report Output</h3>
     <div class="config-block" style="margin-top:16px">
       <div class="config-header">
-        <h4><span style="color:var(--text-muted)">&#9632;</span> <span data-i18n="qs_dir_layout">Directory Layout</span></h4>
+        <h4><span style="color:var(--text-muted)">&#9632;</span> <span data-i18n="dr_report_header">Design QA Report</span></h4>
+        <span class="badge">Markdown</span>
+      </div>
+      <div class="config-body">
+<pre><span class="comment"># 设计走查报告 — Login Screen</span>
+
+<span class="key">设计稿:</span> <span class="str">Frame 1:234 "Login"</span>
+<span class="key">设备:</span> <span class="str">emulator-5554 · com.app/.LoginActivity</span>
+<span class="key">模式:</span> <span class="bool">deep</span>
+
+<span class="comment">## 摘要</span>
+| 严重度        | 数量 |
+|---------------|------|
+| 🔴 Critical  | 1    |
+| 🟠 Major     | 2    |
+| 🟡 Minor     | 1    |
+| <span class="key">合计</span>       | <span class="num">4</span>    |
+
+<span class="comment">## 问题清单</span>
+<span class="comment">### 🔴 Critical</span>
+| # | 元素        | 维度     | 设计值  | 实现值  | 修复建议           |
+|---|-------------|----------|---------|---------|--------------------|
+| 1 | btn_submit  | content  | "登录"  | "登陆"  | <span class="str">修正文案为"登录"</span>  |
+
+<span class="comment">### 🟠 Major</span>
+| # | 元素        | 维度     | 设计值          | 实现值  | 修复建议                     |
+|---|-------------|----------|-----------------|---------|------------------------------|
+| 2 | title       | textSize | <span class="str">spacing/xl (24sp)</span> | <span class="num">20sp</span>   | <span class="str">增大 textSize 到 24sp</span>         |
+| 3 | card        | padding  | <span class="str">16dp all</span>         | <span class="num">12dp top</span>| <span class="str">增加 paddingTop 12dp → 16dp</span>  |</pre>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding:14px 18px;background:var(--accent-light);border-radius:var(--radius-sm);display:flex;gap:10px;font-size:.85rem;color:var(--accent-dark);line-height:1.6">
+      <span style="font-weight:700;flex-shrink:0">&#9432;</span>
+      <span data-i18n-html="dr_note">With <code>--deep</code> mode, the skill checks all dimensions (padding, margin, textSize, textColor, cornerRadius, elevation). In accessibility-only mode, it checks bounds-derived sizes, text, alignment, and presence — clearly marking unchecked dimensions in the report.</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ PROJECT STRUCTURE ═══ -->
+<section class="section" id="structure" style="background:var(--bg-code)">
+  <div class="section-inner">
+    <p class="section-label" data-i18n="structure_label">Source Code</p>
+    <h2 class="section-title" data-i18n="structure_title">Project Structure</h2>
+    <div class="config-block" style="margin-top:24px">
+      <div class="config-header">
+        <h4><span style="color:var(--text-muted)">&#9632;</span> <span data-i18n="structure_dir_layout">Directory Layout</span></h4>
         <span class="badge">TREE</span>
       </div>
       <div class="config-body">
@@ -653,7 +791,6 @@ const I18N = {
     nav_config: 'Configuration',
     nav_tools: 'Tools',
     nav_deep: 'Deep Mode<span class="nav-badge">NEW</span>',
-    nav_quickstart: 'Quick Start',
 
     // Hero
     hero_label: 'Model Context Protocol',
@@ -795,22 +932,67 @@ const I18N = {
     deep_card_req_title: 'Requirements',
     deep_card_req_desc: 'Needs a debuggable app (debug build or userdebug device) and a JDK/JRE on PATH. Fails fast at startup if prerequisites are missing.',
 
-    // Quick Start
-    qs_label: 'Quick Start',
-    qs_title: 'Up and Running in 3 Steps',
-    qs_step1: '<strong>Step 1.</strong> Clone the repository.',
-    qs_step2: '<strong>Step 2.</strong> Install Python dependencies (requires Python 3.13 and UV).',
-    qs_step3: '<strong>Step 3.</strong> Start the MCP server. Replace &lt;serial&gt; with your device ID from adb devices.',
-    qs_card_run_title: 'Run without Local Install',
-    qs_card_run_desc: 'Use uvx android-mcp-pro to run directly without cloning the repo.',
-    qs_card_test_title: 'Run Tests',
-    qs_card_test_desc: 'uv run pytest tests/ for Python unit tests. cd java-deep-inspector && ./gradlew test for Java.',
-    qs_card_platform_title: 'Platform Support',
-    qs_card_platform_desc: 'Works on macOS, Linux, and Windows. On Windows, use Python 3.13 (3.14 has a known pywin32 dependency issue).',
-    qs_structure_title: 'Project Structure',
-    qs_dir_layout: 'Directory Layout',
+    // Design Review
+    nav_design_review: 'Design QA<span class="nav-badge">NEW</span>',
+    dr_label: 'AI Skill',
+    dr_title: 'Automated Design QA',
+    dr_desc: 'A Claude Code skill that compares a live Android screen against its Figma design spec and produces a structured difference report — replacing tedious manual pixel-peeping with repeatable, evidence-based QA.',
+    dr_flow_figma_title: 'Figma Spec',
+    dr_flow_figma_desc: 'Design frame',
+    dr_flow_skill_title: 'Design Review',
+    dr_flow_skill_desc: 'Claude Code Skill',
+    dr_flow_device_title: 'Android Device',
+    dr_flow_device_desc: 'Live screen',
+    dr_flow_report_title: 'QA Report',
+    dr_flow_report_desc: 'Findings + fixes',
+    dr_how_title: 'How It Works',
+    dr_step1_title: 'Pull Design Spec',
+    dr_step1_desc: 'Fetches the target Figma frame via FigRelay MCP — layout, spacing tokens, colors, typography, and component hierarchy.',
+    dr_step2_title: 'Capture Live Screen',
+    dr_step2_desc: 'Uses android-mcp-pro to Snapshot the device, GetLayoutTree for hierarchy, and GetElementDetails / GetSpacing for precise measurements.',
+    dr_step3_title: 'Align & Diff',
+    dr_step3_desc: 'Matches design nodes to device elements by text, resource-id, or position. Diffs spacing, typography, color, and layout with configurable tolerances.',
+    dr_step4_title: 'Generate Report',
+    dr_step4_desc: 'Outputs a Markdown report (human-readable) + JSON (machine-readable) with severity levels, pass counts, and actionable fix hints.',
+    dr_dimensions_title: 'Review Dimensions',
+    dr_dim_spacing: 'Spacing & Size',
+    dr_dim_spacing_desc: 'Padding, margin, width/height, inter-element gaps. Tolerance: ±1dp',
+    dr_dim_typo: 'Typography',
+    dr_dim_typo_desc: 'Text size (sp), text color (#AARRGGBB), font weight, actual text string',
+    dr_dim_color: 'Color & Shape',
+    dr_dim_color_desc: 'Background color, corner radius, elevation/shadow, borders',
+    dr_dim_layout: 'Layout & Content',
+    dr_dim_layout_desc: 'Element presence (missing/extra), hierarchy, alignment, visible copy',
+    dr_tol: '±1dp',
+    dr_exact: 'Exact',
+    dr_binary: 'Binary',
+    dr_severity_title: 'Severity Levels',
+    dr_sev_critical_title: 'Critical',
+    dr_sev_critical_desc: 'Wrong/missing text, missing element, wrong color',
+    dr_sev_major_title: 'Major',
+    dr_sev_major_desc: 'Spacing/size/font deviation beyond tolerance',
+    dr_sev_minor_title: 'Minor',
+    dr_sev_minor_desc: 'Subtle deviations within tolerance, slight shadows',
+    dr_usage_title: 'Usage',
+    dr_usage_desc: 'Trigger the skill by saying any of these to Claude Code while the device is on the target screen and the Figma frame is selected:',
+    dr_trigger1: 'Trigger in Chinese — "help me QA this page"',
+    dr_trigger2: 'Trigger in English — compare current screen to Figma selection',
+    dr_trigger3: 'Trigger in Chinese — "compare design vs real device fidelity"',
+    dr_prereq_title: 'Prerequisites',
+    dr_prereq_mcp_title: 'android-mcp-pro',
+    dr_prereq_mcp_desc: 'Connected device (--deep for full coverage)',
+    dr_prereq_figma_title: 'Figma MCP',
+    dr_prereq_figma_desc: 'FigRelay, Figma Dev Mode, or Framelink',
+    dr_prereq_claude_title: 'Claude Code',
+    dr_prereq_claude_desc: 'With design-review skill installed',
+    dr_report_title: 'Sample Report Output',
+    dr_report_header: 'Design QA Report',
+    dr_note: 'With <code>--deep</code> mode, the skill checks all dimensions (padding, margin, textSize, textColor, cornerRadius, elevation). In accessibility-only mode, it checks bounds-derived sizes, text, alignment, and presence — clearly marking unchecked dimensions in the report.',
 
-    // Tree comments
+    // Project Structure
+    structure_label: 'Source Code',
+    structure_title: 'Project Structure',
+    structure_dir_layout: 'Directory Layout',
     tree_main: '# MCP server entry point + 17 tool definitions',
     tree_service: '# Mobile class (ADB, uiautomator2, screenshot)',
     tree_views: '# MobileState, App dataclasses',
@@ -838,7 +1020,7 @@ const I18N = {
     nav_config: '配置',
     nav_tools: '工具',
     nav_deep: '深度模式<span class="nav-badge">新</span>',
-    nav_quickstart: '快速开始',
+    nav_design_review: '设计走查<span class="nav-badge">新</span>',
 
     // Hero
     hero_label: '模型上下文协议',
@@ -980,22 +1162,66 @@ const I18N = {
     deep_card_req_title: '要求',
     deep_card_req_desc: '需要可调试的应用（debug 构建或 userdebug 设备）以及 PATH 中有 JDK/JRE。启动时若缺少前置条件会立即失败。',
 
-    // Quick Start
-    qs_label: '快速开始',
-    qs_title: '三步即可运行',
-    qs_step1: '<strong>第 1 步。</strong>克隆仓库。',
-    qs_step2: '<strong>第 2 步。</strong>安装 Python 依赖（需要 Python 3.13 和 UV）。',
-    qs_step3: '<strong>第 3 步。</strong>启动 MCP 服务器。将 &lt;serial&gt; 替换为 adb devices 中的设备 ID。',
-    qs_card_run_title: '无需本地安装即可运行',
-    qs_card_run_desc: '使用 uvx android-mcp-pro 直接运行，无需克隆仓库。',
-    qs_card_test_title: '运行测试',
-    qs_card_test_desc: 'uv run pytest tests/ 运行 Python 单元测试。cd java-deep-inspector && ./gradlew test 运行 Java 测试。',
-    qs_card_platform_title: '平台支持',
-    qs_card_platform_desc: '支持 macOS、Linux 和 Windows。在 Windows 上请使用 Python 3.13（3.14 存在已知的 pywin32 依赖问题）。',
-    qs_structure_title: '项目结构',
-    qs_dir_layout: '目录结构',
+    // Design Review
+    dr_label: 'AI 技能',
+    dr_title: '自动化设计走查',
+    dr_desc: '一个 Claude Code 技能，将 Android 真机画面与 Figma 设计稿逐元素对比，生成结构化差异报告——用可重复的、基于证据的 QA 取代繁琐的手动像素对齐。',
+    dr_flow_figma_title: 'Figma 设计稿',
+    dr_flow_figma_desc: '设计 Frame',
+    dr_flow_skill_title: '设计走查',
+    dr_flow_skill_desc: 'Claude Code 技能',
+    dr_flow_device_title: 'Android 设备',
+    dr_flow_device_desc: '真机画面',
+    dr_flow_report_title: 'QA 报告',
+    dr_flow_report_desc: '问题 + 修复建议',
+    dr_how_title: '工作原理',
+    dr_step1_title: '拉取设计规范',
+    dr_step1_desc: '通过 FigRelay MCP 获取目标 Figma Frame 的布局、间距 Token、颜色、字体和组件层级。',
+    dr_step2_title: '捕获真机画面',
+    dr_step2_desc: '使用 android-mcp-pro 的 Snapshot 截图、GetLayoutTree 获取层级、GetElementDetails / GetSpacing 精确测量。',
+    dr_step3_title: '对齐 & 对比',
+    dr_step3_desc: '通过文本、resource-id 或位置将设计节点匹配到设备元素。按可配置容差对比间距、字体、颜色和布局。',
+    dr_step4_title: '生成报告',
+    dr_step4_desc: '输出 Markdown 报告（人类可读）+ JSON（机器可读），含严重度分级、通过项统计和可执行的修复建议。',
+    dr_dimensions_title: '检查维度',
+    dr_dim_spacing: '间距 & 尺寸',
+    dr_dim_spacing_desc: 'padding、margin、宽/高、元素间隙。容差：±1dp',
+    dr_dim_typo: '字体排版',
+    dr_dim_typo_desc: '字号（sp）、文本颜色（#AARRGGBB）、字重、文本内容',
+    dr_dim_color: '颜色 & 形状',
+    dr_dim_color_desc: '背景色、圆角、elevation/阴影、边框',
+    dr_dim_layout: '布局 & 内容',
+    dr_dim_layout_desc: '元素存在性（缺失/多余）、层级、对齐、可见文案',
+    dr_tol: '±1dp',
+    dr_exact: '精确',
+    dr_binary: '二值',
+    dr_severity_title: '严重度分级',
+    dr_sev_critical_title: 'Critical（严重）',
+    dr_sev_critical_desc: '文案错误/缺失、元素缺失、颜色错误',
+    dr_sev_major_title: 'Major（重要）',
+    dr_sev_major_desc: '间距/尺寸/字号偏差超出容差',
+    dr_sev_minor_title: 'Minor（轻微）',
+    dr_sev_minor_desc: '容差边缘的细微偏差、轻微阴影差异',
+    dr_usage_title: '使用方法',
+    dr_usage_desc: '在设备显示目标画面且 Figma 选中对应 Frame 时，对 Claude Code 说以下任一触发词：',
+    dr_trigger1: '中文触发 —— "帮我走查这个页面"',
+    dr_trigger2: '英文触发 —— 将当前画面与 Figma 选区对比',
+    dr_trigger3: '中文触发 —— "对比设计稿和真机的还原度"',
+    dr_prereq_title: '前置条件',
+    dr_prereq_mcp_title: 'android-mcp-pro',
+    dr_prereq_mcp_desc: '已连接设备（--deep 获得完整覆盖）',
+    dr_prereq_figma_title: 'Figma MCP',
+    dr_prereq_figma_desc: 'FigRelay、Figma Dev Mode 或 Framelink',
+    dr_prereq_claude_title: 'Claude Code',
+    dr_prereq_claude_desc: '已安装 design-review 技能',
+    dr_report_title: '报告示例',
+    dr_report_header: '设计走查报告',
+    dr_note: '使用 <code>--deep</code> 模式时，技能可检查所有维度（padding、margin、textSize、textColor、cornerRadius、elevation）。仅 accessibility 模式时，检查基于 bounds 的尺寸、文本、对齐和存在性——报告中会明确标注未检查的维度。',
 
-    // Tree comments
+    // Project Structure
+    structure_label: '源代码',
+    structure_title: '项目结构',
+    structure_dir_layout: '目录结构',
     tree_main: '# MCP 服务器入口 + 17 个工具定义',
     tree_service: '# Mobile 类（ADB、uiautomator2、截图）',
     tree_views: '# MobileState、App 数据类',
