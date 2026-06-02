@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Android MCP Pro — Bridge AI Agents to Android Devices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FAFAF8;--bg-card:#FFFFFF;--bg-code:#F5F5F0;
+  --text:#1A1A1A;--text-secondary:#6B6B6B;--text-muted:#9B9B9B;
+  --accent:#2D7D9A;--accent-light:#E8F4F8;--accent-dark:#1B5E75;
+  --border:#E8E8E4;--border-light:#F0F0EC;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 24px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 48px rgba(0,0,0,.08);
+  --radius:12px;--radius-sm:8px;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','SF Mono',monospace;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font-body);color:var(--text);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-light);color:var(--accent-dark)}
+
+/* ── Navigation ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,250,248,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border-light);transition:box-shadow .3s}
+nav.scrolled{box-shadow:var(--shadow-sm)}
+.nav-inner{max-width:1120px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav-brand{font-family:var(--font-display);font-size:1.25rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+.nav-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.nav-links{display:flex;gap:28px;list-style:none;align-items:center}
+.nav-links a{font-size:.875rem;font-weight:500;color:var(--text-secondary);text-decoration:none;transition:color .2s;letter-spacing:.01em}
+.nav-links a:hover{color:var(--accent)}
+.nav-badge{font-size:.7rem;background:var(--accent-light);color:var(--accent-dark);padding:3px 8px;border-radius:4px;font-weight:600;margin-left:6px;vertical-align:middle}
+
+/* ── Language Toggle ── */
+.lang-toggle{display:flex;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:.8rem;font-weight:500}
+.lang-toggle button{padding:6px 12px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:500;transition:all .2s;letter-spacing:.02em}
+.lang-toggle button:hover{color:var(--accent)}
+.lang-toggle button.active{background:var(--accent);color:#fff}
+
+/* ── Hero ── */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 32px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(45,125,154,.06) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(45,125,154,.04) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:720px;text-align:center;position:relative;z-index:1}
+.hero-label{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:24px}
+.hero-label .line{width:24px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--font-display);font-size:clamp(2.8rem,6vw,4.2rem);line-height:1.1;font-weight:400;margin-bottom:24px;letter-spacing:-.02em}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero-desc{font-size:1.125rem;color:var(--text-secondary);line-height:1.8;max-width:560px;margin:0 auto 40px}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.875rem;font-weight:600;text-decoration:none;transition:all .2s;cursor:pointer;border:none}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark);box-shadow:0 4px 16px rgba(45,125,154,.25);transform:translateY(-1px)}
+.btn-secondary{background:var(--bg-card);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.hero-stats{display:flex;gap:48px;justify-content:center;margin-top:64px;padding-top:40px;border-top:1px solid var(--border-light)}
+.hero-stat{text-align:center}
+.hero-stat .num{font-family:var(--font-display);font-size:1.75rem;color:var(--text);display:block}
+.hero-stat .label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+
+/* ── Section ── */
+.section{padding:100px 32px}
+.section-inner{max-width:960px;margin:0 auto}
+.section-label{font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+.section-title{font-family:var(--font-display);font-size:clamp(1.8rem,3.5vw,2.4rem);margin-bottom:16px;letter-spacing:-.01em}
+.section-desc{color:var(--text-secondary);font-size:1.05rem;max-width:640px;line-height:1.8}
+.section-desc+p{margin-top:8px}
+
+/* ── Architecture ── */
+.arch-diagram{margin-top:48px;display:flex;flex-direction:column;gap:0;position:relative}
+.arch-layer{display:flex;align-items:stretch;position:relative}
+.arch-layer+.arch-layer{margin-top:-1px}
+.arch-node{flex:1;padding:28px 24px;background:var(--bg-card);border:1px solid var(--border);position:relative;transition:all .2s}
+.arch-node:first-child{border-radius:var(--radius) 0 0 0}
+.arch-node:last-child{border-radius:0 var(--radius) 0 0}
+.arch-layer:last-child .arch-node:first-child{border-radius:0 0 0 var(--radius)}
+.arch-layer:last-child .arch-node:last-child{border-radius:0 0 var(--radius) 0}
+.arch-node:hover{border-color:var(--accent);z-index:2;box-shadow:var(--shadow-md)}
+.arch-node h4{font-family:var(--font-display);font-size:1.1rem;margin-bottom:6px;em;font-style:normal;color:var(--accent)}
+.arch-node p{font-size:.8rem;color:var(--text-secondary);line-height:1.6}
+.arch-arrow{text-align:center;color:var(--text-muted);font-size:1.2rem;padding:8px 0;display:flex;align-items:center;justify-content:center;gap:12px}
+.arch-arrow::before,.arch-arrow::after{content:'';flex:1;max-width:100px;height:1px;background:var(--border)}
+
+/* ── Flow Diagram ── */
+.flow{margin-top:48px;display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+.flow-step{text-align:center;padding:20px 16px;position:relative;min-width:120px}
+.flow-step .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.2rem}
+.flow-step .icon.blue{background:var(--accent-light);color:var(--accent)}
+.flow-step .icon.green{background:#E8F8EF;color:#2D8A56}
+.flow-step .icon.amber{background:#FFF8E8;color:#A67C00}
+.flow-step .icon.purple{background:#F3EEFF;color:#6B4FA0}
+.flow-step h5{font-size:.85rem;font-weight:600;margin-bottom:4px}
+.flow-step p{font-size:.72rem;color:var(--text-muted)}
+.flow-arrow{color:var(--text-muted);font-size:1rem;padding:0 4px}
+
+/* ── Cards Grid ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:40px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;transition:all .25s}
+.card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:1rem}
+.card-icon.teal{background:var(--accent-light);color:var(--accent)}
+.card-icon.green{background:#E8F8EF;color:#2D8A56}
+.card-icon.amber{background:#FFF8E8;color:#A67C00}
+.card-icon.red{background:#FFF0F0;color:#C43D3D}
+.card-icon.purple{background:#F3EEFF;color:#6B4FA0}
+.card h4{font-size:1rem;font-weight:600;margin-bottom:8px}
+.card p{font-size:.85rem;color:var(--text-secondary);line-height:1.7}
+
+/* ── Config ── */
+.config-block{margin-top:32px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.config-header{padding:16px 24px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between}
+.config-header h4{font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.config-header .badge{font-size:.65rem;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+.config-body{padding:24px}
+.config-body pre{font-family:var(--font-mono);font-size:.8rem;line-height:1.8;color:var(--text);overflow-x:auto}
+.config-body .comment{color:var(--text-muted)}
+.config-body .key{color:var(--accent-dark)}
+.config-body .str{color:#2D8A56}
+.config-body .bool{color:#A67C00}
+.config-body .num{color:#6B4FA0}
+
+/* ── Tool Table ── */
+.tools-grid{margin-top:40px;display:grid;gap:8px}
+.tool-item{display:grid;grid-template-columns:180px 1fr 80px;align-items:center;padding:14px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);transition:all .2s;gap:16px}
+.tool-item:hover{border-color:var(--accent);box-shadow:var(--shadow-sm)}
+.tool-name{font-family:var(--font-mono);font-size:.82rem;font-weight:500;color:var(--accent-dark)}
+.tool-desc{font-size:.82rem;color:var(--text-secondary)}
+.tool-tag{font-size:.65rem;font-weight:600;padding:3px 10px;border-radius:4px;text-align:center}
+.tool-tag.ro{background:#E8F8EF;color:#2D8A56}
+.tool-tag.rw{background:#FFF8E8;color:#A67C00}
+.tool-tag.meta{background:var(--accent-light);color:var(--accent-dark)}
+
+/* ── CLI ── */
+.cli-list{margin-top:32px;display:flex;flex-direction:column;gap:12px}
+.cli-item{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.cli-cmd{padding:14px 20px;font-family:var(--font-mono);font-size:.8rem;background:var(--bg-code);display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-light)}
+.cli-cmd .prompt{color:var(--accent);font-weight:600;user-select:none}
+.cli-desc{padding:12px 20px;font-size:.82rem;color:var(--text-secondary);line-height:1.6}
+
+/* ── Deep Mode ── */
+.comparison{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.comparison-col{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.comparison-col.deep{border-color:var(--accent)}
+.comparison-head{padding:16px 24px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px}
+.comparison-head h4{font-size:.9rem;font-weight:600}
+.comparison-head .tag{font-size:.6rem;padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.tag-default{background:#E8E8E4;color:#6B6B6B}
+.tag-deep{background:var(--accent-light);color:var(--accent)}
+.comparison-body{padding:20px 24px}
+.comparison-body ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.comparison-body li{font-size:.82rem;color:var(--text-secondary);padding-left:20px;position:relative;line-height:1.6}
+.comparison-body li::before{content:'';position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%}
+.comparison-body .has::before{background:#2D8A56}
+.comparison-body .partial::before{background:#A67C00}
+.comparison-body .none::before{background:#C43D3D}
+
+/* ── Requirements ── */
+.req-list{margin-top:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.req-item{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.req-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.req-text h5{font-size:.85rem;font-weight:600}
+.req-text p{font-size:.72rem;color:var(--text-muted)}
+
+/* ── Footer ── */
+footer{padding:48px 32px;border-top:1px solid var(--border-light)}
+.footer-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.footer-inner p{font-size:.8rem;color:var(--text-muted)}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:.8rem;color:var(--text-secondary);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hero-stats{gap:24px;flex-wrap:wrap}
+  .comparison{grid-template-columns:1fr}
+  .tool-item{grid-template-columns:1fr;gap:4px}
+  .tool-tag{justify-self:start}
+  .flow{flex-direction:column}
+  .flow-arrow{transform:rotate(90deg)}
+  .arch-layer{flex-direction:column}
+  .arch-node:first-child{border-radius:var(--radius) var(--radius) 0 0}
+  .arch-node:last-child{border-radius:0 0 var(--radius) var(--radius)}
+  .footer-inner{flex-direction:column;gap:16px;text-align:center}
+}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.animate{opacity:0;animation:fadeUp .6s ease forwards}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}.delay-5{animation-delay:.5s}
+
+@media(prefers-reduced-motion:reduce){
+  .animate{animation:none;opacity:1}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand"><span class="dot"></span>Android MCP Pro</a>
+    <ul class="nav-links">
+      <li><a href="#architecture" data-i18n="nav_architecture">Architecture</a></li>
+      <li><a href="#config" data-i18n="nav_config">Configuration</a></li>
+      <li><a href="#tools" data-i18n="nav_tools">Tools</a></li>
+      <li><a href="#deep" data-i18n-html="nav_deep">Deep Mode<span class="nav-badge">NEW</span></a></li>
+      <li><a href="#quickstart" data-i18n="nav_quickstart">Quick Start</a></li>
+      <li>
+        <div class="lang-toggle">
+          <button id="langEn" class="active" onclick="setLang('en')">EN</button>
+          <button id="langZh" onclick="setLang('zh')">中文</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-label animate"><span class="line"></span><span data-i18n="hero_label">Model Context Protocol</span><span class="line"></span></div>
+    <h1 class="animate delay-1" data-i18n-html="hero_title">Bridge AI <em>agents</em><br>to Android devices</h1>
+    <p class="hero-desc animate delay-2" data-i18n="hero_desc">A lightweight, open-source MCP server that lets LLM agents perform real-world tasks on Android — app navigation, UI interaction, automated QA testing — without computer-vision pipelines or preprogrammed scripts.</p>
+    <div class="hero-actions animate delay-3">
+      <a href="#quickstart" class="btn btn-primary" data-i18n-html="hero_cta_primary">Get Started &rarr;</a>
+      <a href="https://github.com/edditz/android-mcp-pro" class="btn btn-secondary" target="_blank" data-i18n="hero_cta_secondary">View on GitHub</a>
+    </div>
+    <div class="hero-stats animate delay-4">
+      <div class="hero-stat"><span class="num">17</span><span class="label" data-i18n="stat_tools">MCP Tools</span></div>
+      <div class="hero-stat"><span class="num">~2s</span><span class="label" data-i18n="stat_latency">Avg Latency</span></div>
+      <div class="hero-stat"><span class="num">3</span><span class="label" data-i18n="stat_platforms">Platforms</span></div>
+      <div class="hero-stat"><span class="num">MIT</span><span class="label" data-i18n="stat_license">License</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<section class="section" id="architecture">
+  <div class="section-inner">
+    <p class="section-label" data-i18n="arch_label">Implementation Principles</p>
+    <h2 class="section-title" data-i18n="arch_title">Three-Layer Architecture</h2>
+    <p class="section-desc" data-i18n="arch_desc">Data flows top-down from AI agents through the MCP protocol, into purpose-built tool handlers, down to uiautomator2 and ADB — and back up as structured results.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-node" style="flex:1.2">
+          <h4 data-i18n="arch_l1_title">Layer 1 — MCP Server</h4>
+          <p data-i18n="arch_l1_desc">Entry point (__main__.py). Parses CLI flags, creates the FastMCP instance, and defines 17 tool functions. Lazy device connection on first call.</p>
+        </div>
+      </div>
+      <div class="arch-arrow" data-i18n-html="arch_arrow1">&darr; FastMCP protocol &darr;</div>
+      <div class="arch-layer">
+        <div class="arch-node">
+          <h4 data-i18n="arch_l2_title">Layer 2 — Mobile Service</h4>
+          <p data-i18n="arch_l2_desc">ADB device listing, WiFi connect, uiautomator2 session. Parallel XML + screenshot capture via threads.</p>
+        </div>
+        <div class="arch-node">
+          <h4 data-i18n="arch_l3a_title">Layer 3a — Tree Parser</h4>
+          <p data-i18n="arch_l3a_desc">Parses Android UI XML. Identifies interactive elements via accessibility attributes. Generates annotated screenshots with bounding boxes.</p>
+        </div>
+        <div class="arch-node">
+          <h4 data-i18n="arch_l3b_title">Layer 3b — Layout Providers</h4>
+          <p data-i18n="arch_l3b_desc">Strategy pattern: AccessibilityProvider (default) or JdwpProvider (deep mode) behind a shared LayoutProvider protocol.</p>
+        </div>
+      </div>
+      <div class="arch-arrow" data-i18n-html="arch_arrow2">&darr; ADB / uiautomator2 / JDWP &darr;</div>
+      <div class="arch-layer">
+        <div class="arch-node" style="flex:1;text-align:center">
+          <h4 data-i18n="arch_device_title">Android Device</h4>
+          <p data-i18n="arch_device_desc">Physical device or emulator connected via USB or Wi-Fi ADB</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow" style="margin-top:56px">
+      <div class="flow-step">
+        <div class="icon blue">AI</div>
+        <h5 data-i18n="flow_ai_title">AI Agent</h5>
+        <p data-i18n="flow_ai_desc">Claude, GPT, etc.</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="icon green">MCP</div>
+        <h5 data-i18n="flow_mcp_title">MCP Protocol</h5>
+        <p data-i18n="flow_mcp_desc">Tool calls &amp; results</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="icon amber">AT</div>
+        <h5 data-i18n="flow_tools_title">Tool Handlers</h5>
+        <p data-i18n="flow_tools_desc">17 built-in tools</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="icon purple">D</div>
+        <h5 data-i18n="flow_bridge_title">Device Bridge</h5>
+        <p data-i18n="flow_bridge_desc">uiautomator2 / ADB</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="icon blue">&#9742;</div>
+        <h5 data-i18n="flow_android_title">Android</h5>
+        <p data-i18n="flow_android_desc">Real device / emulator</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONFIGURATION ═══ -->
+<section class="section" id="config" style="background:var(--bg-code)">
+  <div class="section-inner">
+    <p class="section-label" data-i18n="config_label">Configuration</p>
+    <h2 class="section-title" data-i18n="config_title">Get Connected in Minutes</h2>
+    <p class="section-desc" data-i18n="config_desc">Android MCP Pro supports flexible device targeting via CLI flags, environment variables, or the MCP bundle manifest's user_config schema.</p>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_req_title">Requirements</h3>
+    <div class="req-list">
+      <div class="req-item">
+        <div class="req-icon" style="background:var(--accent-light);color:var(--accent)">Py</div>
+        <div class="req-text"><h5 data-i18n="req_python_title">Python 3.13</h5><p data-i18n="req_python_desc">Strictly &ge;3.13, &lt;3.14</p></div>
+      </div>
+      <div class="req-item">
+        <div class="req-icon" style="background:#E8F8EF;color:#2D8A56">UV</div>
+        <div class="req-text"><h5 data-i18n="req_uv_title">UV Package Manager</h5><p>curl -LsSf https://astral.sh/uv/install.sh | sh</p></div>
+      </div>
+      <div class="req-item">
+        <div class="req-icon" style="background:#FFF8E8;color:#A67C00">AD</div>
+        <div class="req-text"><h5 data-i18n="req_adb_title">ADB</h5><p data-i18n="req_adb_desc">Android Debug Bridge on PATH</p></div>
+      </div>
+      <div class="req-item">
+        <div class="req-icon" style="background:#F3EEFF;color:#6B4FA0">D</div>
+        <div class="req-text"><h5 data-i18n="req_device_title">Android Device</h5><p data-i18n="req_device_desc">USB or Wi-Fi connected</p></div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_claude_title">Claude Desktop Configuration</h3>
+    <div class="config-block">
+      <div class="config-header">
+        <h4><span style="color:var(--text-muted)">&#9632;</span> claude_desktop_config.json</h4>
+        <span class="badge">JSON</span>
+      </div>
+      <div class="config-body">
+<pre>{
+  <span class="key">"mcpServers"</span>: {
+    <span class="key">"android"</span>: {
+      <span class="key">"command"</span>: <span class="str">"uv"</span>,
+      <span class="key">"args"</span>: [<span class="str">"--directory"</span>, <span class="str">"/path/to/android-mcp-pro"</span>, <span class="str">"run"</span>, <span class="str">"android-mcp"</span>],
+      <span class="key">"env"</span>: {
+        <span class="key">"UV_NO_SYNC"</span>: <span class="str">"1"</span>,
+        <span class="key">"ANDROID_MCP_DEVICE"</span>: <span class="str">"emulator-5554"</span>,
+        <span class="key">"ANDROID_MCP_CONNECTION"</span>: <span class="str">"auto"</span>,
+        <span class="key">"SCREENSHOT_QUANTIZED"</span>: <span class="str">"false"</span>
+      }
+    }
+  }
+}</pre>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_cli_title">CLI Flags</h3>
+    <div class="cli-list">
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --device emulator-5554</div>
+        <div class="cli-desc" data-i18n="cli_device_desc">Connect to a specific device by ADB serial number.</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --wifi 192.168.1.10</div>
+        <div class="cli-desc" data-i18n="cli_wifi_desc">Connect over Wi-Fi ADB. Port defaults to 5555 if omitted.</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --usb</div>
+        <div class="cli-desc" data-i18n="cli_usb_desc">Force USB connection only. Auto-selects the first USB device.</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --deep</div>
+        <div class="cli-desc" data-i18n="cli_deep_desc">Enable JDWP deep layout mode for full View properties (requires debuggable app).</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --debug</div>
+        <div class="cli-desc" data-i18n="cli_debug_desc">Log all tool calls as JSON files for debugging.</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_env_title">Environment Variables</h3>
+    <div class="config-block">
+      <div class="config-header">
+        <h4><span style="color:var(--text-muted)">&#9632;</span> <span data-i18n="config_env_ref">Env Reference</span></h4>
+        <span class="badge">ENV</span>
+      </div>
+      <div class="config-body" style="display:grid;grid-template-columns:auto 1fr;gap:8px 24px;font-size:.82rem">
+        <code style="color:var(--accent-dark)">ANDROID_MCP_DEVICE</code><span style="color:var(--text-secondary)" data-i18n="env_device">ADB serial or host:port</span>
+        <code style="color:var(--accent-dark)">ANDROID_MCP_CONNECTION</code><span style="color:var(--text-secondary)" data-i18n="env_connection">auto | usb | wifi</span>
+        <code style="color:var(--accent-dark)">ANDROID_MCP_HOST</code><span style="color:var(--text-secondary)" data-i18n="env_host">Wi-Fi ADB host (used with connection=wifi)</span>
+        <code style="color:var(--accent-dark)">SCREENSHOT_QUANTIZED</code><span style="color:var(--text-secondary)" data-i18n="env_quantized">Compress screenshots to 256-color (1|true|yes)</span>
+        <code style="color:var(--accent-dark)">ANDROID_MCP_DEBUG</code><span style="color:var(--text-secondary)" data-i18n="env_debug">Enable debug logging (1|true|yes)</span>
+        <code style="color:var(--accent-dark)">ADB_PATH</code><span style="color:var(--text-secondary)" data-i18n="env_adb_path">Custom path to adb binary (default: adb)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TOOLS ═══ -->
+<section class="section" id="tools">
+  <div class="section-inner">
+    <p class="section-label" data-i18n="tools_label">Tool Reference</p>
+    <h2 class="section-title" data-i18n="tools_title">17 Built-In MCP Tools</h2>
+    <p class="section-desc" data-i18n="tools_desc">Every tool maps 1:1 to a real device action. Click, swipe, type, capture — everything an AI agent needs to operate an Android device like a human user.</p>
+
+    <div class="tools-grid">
+      <div class="tool-item"><span class="tool-name">ListDevices</span><span class="tool-desc" data-i18n="tool_list_devices">List connected ADB devices and their state</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span></div>
+      <div class="tool-item"><span class="tool-name">ConnectDevice</span><span class="tool-desc" data-i18n="tool_connect_device">Connect to an ADB device by serial number</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span></div>
+      <div class="tool-item"><span class="tool-name">Device</span><span class="tool-desc" data-i18n="tool_device">Manage devices: list, connect, or disconnect</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span></div>
+      <div class="tool-item"><span class="tool-name">Snapshot</span><span class="tool-desc" data-i18n="tool_snapshot">Get device state with optional annotated screenshot</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
+      <div class="tool-item"><span class="tool-name">GetLayoutTree</span><span class="tool-desc" data-i18n="tool_layout_tree">Full view hierarchy as a tree of all UI elements</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
+      <div class="tool-item"><span class="tool-name">GetElementDetails</span><span class="tool-desc" data-i18n="tool_element_details">Detailed properties of a single UI element</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
+      <div class="tool-item"><span class="tool-name">GetSpacing</span><span class="tool-desc" data-i18n="tool_spacing">Spacing &amp; alignment between two UI elements</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
+      <div class="tool-item"><span class="tool-name">WaitForElement</span><span class="tool-desc" data-i18n="tool_wait_element">Wait for a dynamic element to appear on screen</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
+      <div class="tool-item"><span class="tool-name">Click</span><span class="tool-desc" data-i18n="tool_click">Click at a specific coordinate (x, y)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">ClickBySelector</span><span class="tool-desc" data-i18n="tool_click_selector">Click by text, resourceId, className, or description</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">LongClick</span><span class="tool-desc" data-i18n="tool_long_click">Long press at a specific coordinate</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">Swipe</span><span class="tool-desc" data-i18n="tool_swipe">Swipe from (x1,y1) to (x2,y2)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">Type</span><span class="tool-desc" data-i18n="tool_type">Type text, optionally clearing existing content</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">Drag</span><span class="tool-desc" data-i18n="tool_drag">Drag from one location and drop on another</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">Press</span><span class="tool-desc" data-i18n="tool_press">Press a hardware/software button (Back, Home, etc.)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">Notification</span><span class="tool-desc" data-i18n="tool_notification">Open the device notification shade</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <div class="tool-item"><span class="tool-name">Wait</span><span class="tool-desc" data-i18n="tool_wait">Wait for a specific number of seconds</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+    </div>
+
+    <div class="cards" style="margin-top:48px">
+      <div class="card">
+        <div class="card-icon teal">ID</div>
+        <h4 data-i18n="card_res_id_title">Resource ID Auto-Expansion</h4>
+        <p data-i18n="card_res_id_desc">Short IDs like btn_login are automatically expanded to com.example.app:id/btn_login using the foreground app's package name.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon green">SS</div>
+        <h4 data-i18n="card_parallel_title">Parallel Data Capture</h4>
+        <p data-i18n="card_parallel_desc">XML hierarchy dump and screenshot run in separate threads simultaneously for minimal latency.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon amber">DP</div>
+        <h4 data-i18n="card_dp_title">DP-Aware Spacing</h4>
+        <p data-i18n="card_dp_desc">Spacing calculations convert px to dp using the device's actual display density ratio.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DEEP MODE ═══ -->
+<section class="section" id="deep" style="background:var(--bg-code)">
+  <div class="section-inner">
+    <p class="section-label" data-i18n="deep_label">Advanced</p>
+    <h2 class="section-title" data-i18n="deep_title">Deep Mode via JDWP</h2>
+    <p class="section-desc" data-i18n="deep_desc">The optional --deep flag switches the layout backend from the Accessibility API to JDWP (Java Debug Wire Protocol), unlocking real View properties the accessibility tree cannot expose.</p>
+
+    <div class="comparison">
+      <div class="comparison-col">
+        <div class="comparison-head">
+          <h4 data-i18n="deep_default_title">Default Mode</h4>
+          <span class="tag tag-default" data-i18n="deep_default_tag">Accessibility</span>
+        </div>
+        <div class="comparison-body">
+          <ul>
+            <li class="has" data-i18n="deep_d_has1">Bounds, text, content-description</li>
+            <li class="has" data-i18n="deep_d_has2">Clickable / focusable / scrollable flags</li>
+            <li class="has" data-i18n="deep_d_has3">resource-id, class name</li>
+            <li class="has" data-i18n="deep_d_has4">index, package, checkable states</li>
+            <li class="none" data-i18n="deep_d_none1">No padding / margin / elevation</li>
+            <li class="none" data-i18n="deep_d_none2">No textSize / textColor</li>
+            <li class="none" data-i18n="deep_d_none3">No corner radius / background</li>
+          </ul>
+        </div>
+      </div>
+      <div class="comparison-col deep">
+        <div class="comparison-head">
+          <h4 data-i18n="deep_deep_title">Deep Mode</h4>
+          <span class="tag tag-deep" data-i18n="deep_deep_tag">JDWP</span>
+        </div>
+        <div class="comparison-body">
+          <ul>
+            <li class="has" data-i18n="deep_j_has1">Everything in default mode</li>
+            <li class="has" data-i18n="deep_j_has2">padding (top/left/right/bottom)</li>
+            <li class="has" data-i18n="deep_j_has3">margin, elevation, minHeight/Width</li>
+            <li class="has" data-i18n="deep_j_has4">textSize, textColor, hintText</li>
+            <li class="has" data-i18n="deep_j_has5">cornerRadius, background color</li>
+            <li class="has" data-i18n="deep_j_has6">visibility, enabled, alpha</li>
+            <li class="partial" data-i18n="deep_j_partial">No content-description (falls back to text)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards" style="margin-top:32px">
+      <div class="card">
+        <div class="card-icon teal">JD</div>
+        <h4 data-i18n="deep_card_how_title">How It Works</h4>
+        <p data-i18n="deep_card_how_desc">A prebuilt Java fat-jar (deep-inspector.jar) connects to the debuggable process via ddmlib, dumps the View hierarchy as JSON, and pipes it to Python via stdout.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon amber">W</div>
+        <h4 data-i18n="deep_card_window_title">Window Selection</h4>
+        <p data-i18n="deep_card_window_desc">Automatically targets the foreground Activity window using device.app_current(), avoiding stale background windows in multi-window processes.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon red">!</div>
+        <h4 data-i18n="deep_card_req_title">Requirements</h4>
+        <p data-i18n="deep_card_req_desc">Needs a debuggable app (debug build or userdebug device) and a JDK/JRE on PATH. Fails fast at startup if prerequisites are missing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ QUICK START ═══ -->
+<section class="section" id="quickstart">
+  <div class="section-inner">
+    <p class="section-label" data-i18n="qs_label">Quick Start</p>
+    <h2 class="section-title" data-i18n="qs_title">Up and Running in 3 Steps</h2>
+
+    <div class="cli-list" style="margin-top:40px">
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> git clone https://github.com/edditz/android-mcp-pro &amp;&amp; cd android-mcp-pro</div>
+        <div class="cli-desc" data-i18n-html="qs_step1"><strong>Step 1.</strong> Clone the repository.</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> uv sync</div>
+        <div class="cli-desc" data-i18n-html="qs_step2"><strong>Step 2.</strong> Install Python dependencies (requires Python 3.13 and UV).</div>
+      </div>
+      <div class="cli-item">
+        <div class="cli-cmd"><span class="prompt">$</span> uv run android-mcp --device &lt;serial&gt;</div>
+        <div class="cli-desc" data-i18n-html="qs_step3"><strong>Step 3.</strong> Start the MCP server. Replace &lt;serial&gt; with your device ID from adb devices.</div>
+      </div>
+    </div>
+
+    <div class="cards" style="margin-top:40px">
+      <div class="card">
+        <div class="card-icon purple">R</div>
+        <h4 data-i18n="qs_card_run_title">Run without Local Install</h4>
+        <p data-i18n="qs_card_run_desc">Use uvx android-mcp to run directly from PyPI without cloning the repo.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon green">T</div>
+        <h4 data-i18n="qs_card_test_title">Run Tests</h4>
+        <p data-i18n="qs_card_test_desc">uv run pytest tests/ for Python unit tests. cd java-deep-inspector &amp;&amp; ./gradlew test for Java.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon teal">P</div>
+        <h4 data-i18n="qs_card_platform_title">Platform Support</h4>
+        <p data-i18n="qs_card_platform_desc">Works on macOS, Linux, and Windows. On Windows, use Python 3.13 (3.14 has a known pywin32 dependency issue).</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="qs_structure_title">Project Structure</h3>
+    <div class="config-block" style="margin-top:16px">
+      <div class="config-header">
+        <h4><span style="color:var(--text-muted)">&#9632;</span> <span data-i18n="qs_dir_layout">Directory Layout</span></h4>
+        <span class="badge">TREE</span>
+      </div>
+      <div class="config-body">
+<pre><span class="key">android-mcp-pro/</span>
+<span class="comment">├──</span> src/android_mcp/
+<span class="comment">│   ├──</span> __main__.py          <span class="comment" data-i18n="tree_main"># MCP server entry point + 17 tool definitions</span>
+<span class="comment">│   ├──</span> mobile/
+<span class="comment">│   │   ├──</span> service.py       <span class="comment" data-i18n="tree_service"># Mobile class (ADB, uiautomator2, screenshot)</span>
+<span class="comment">│   │   └──</span> views.py         <span class="comment" data-i18n="tree_views"># MobileState, App dataclasses</span>
+<span class="comment">│   ├──</span> tree/
+<span class="comment">│   │   ├──</span> service.py       <span class="comment" data-i18n="tree_tree_service"># Tree parser (XML → element nodes)</span>
+<span class="comment">│   │   ├──</span> views.py         <span class="comment" data-i18n="tree_tree_views"># ElementNode, BoundingBox, TreeState</span>
+<span class="comment">│   │   └──</span> config.py        <span class="comment" data-i18n="tree_config"># Interactive element detection rules</span>
+<span class="comment">│   └──</span> layout/
+<span class="comment">│       ├──</span> provider.py      <span class="comment" data-i18n="tree_provider"># LayoutProvider protocol</span>
+<span class="comment">│       ├──</span> accessibility_provider.py  <span class="comment" data-i18n="tree_acc_prov"># Default: accessibility tree</span>
+<span class="comment">│       ├──</span> jdwp_provider.py <span class="comment" data-i18n="tree_jdwp_prov"># Deep mode: JDWP/Java bridge</span>
+<span class="comment">│       ├──</span> jdwp_runner.py   <span class="comment" data-i18n="tree_jdwp_runner"># Subprocess wrapper for deep-inspector.jar</span>
+<span class="comment">│       └──</span> models.py        <span class="comment" data-i18n="tree_models"># DeepLayoutNode + tree renderer</span>
+<span class="comment">├──</span> java-deep-inspector/     <span class="comment" data-i18n="tree_java"># Gradle project for JDWP deep inspector</span>
+<span class="comment">├──</span> prebuilt/
+<span class="comment">│   └──</span> deep-inspector.jar  <span class="comment" data-i18n="tree_jar"># Checked-in fat-jar for --deep mode</span>
+<span class="comment">├──</span> manifest.json            <span class="comment" data-i18n="tree_manifest"># MCP bundle manifest (v0.4)</span>
+<span class="comment">└──</span> pyproject.toml           <span class="comment" data-i18n="tree_pyproject"># Python package config</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <p data-i18n="footer_text">Android MCP Pro — Open-source under MIT License</p>
+    <div class="footer-links">
+      <a href="https://github.com/edditz/android-mcp-pro">GitHub</a>
+      <a href="https://github.com/edditz/android-mcp-pro/issues" data-i18n="footer_issues">Issues</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── i18n Translations ──
+const I18N = {
+  en: {
+    // Nav
+    nav_architecture: 'Architecture',
+    nav_config: 'Configuration',
+    nav_tools: 'Tools',
+    nav_deep: 'Deep Mode<span class="nav-badge">NEW</span>',
+    nav_quickstart: 'Quick Start',
+
+    // Hero
+    hero_label: 'Model Context Protocol',
+    hero_title: 'Bridge AI <em>agents</em><br>to Android devices',
+    hero_desc: 'A lightweight, open-source MCP server that lets LLM agents perform real-world tasks on Android — app navigation, UI interaction, automated QA testing — without computer-vision pipelines or preprogrammed scripts.',
+    hero_cta_primary: 'Get Started &rarr;',
+    hero_cta_secondary: 'View on GitHub',
+    stat_tools: 'MCP Tools',
+    stat_latency: 'Avg Latency',
+    stat_platforms: 'Platforms',
+    stat_license: 'License',
+
+    // Architecture
+    arch_label: 'Implementation Principles',
+    arch_title: 'Three-Layer Architecture',
+    arch_desc: 'Data flows top-down from AI agents through the MCP protocol, into purpose-built tool handlers, down to uiautomator2 and ADB — and back up as structured results.',
+    arch_l1_title: 'Layer 1 — MCP Server',
+    arch_l1_desc: 'Entry point (__main__.py). Parses CLI flags, creates the FastMCP instance, and defines 17 tool functions. Lazy device connection on first call.',
+    arch_arrow1: '&darr; FastMCP protocol &darr;',
+    arch_l2_title: 'Layer 2 — Mobile Service',
+    arch_l2_desc: 'ADB device listing, WiFi connect, uiautomator2 session. Parallel XML + screenshot capture via threads.',
+    arch_l3a_title: 'Layer 3a — Tree Parser',
+    arch_l3a_desc: 'Parses Android UI XML. Identifies interactive elements via accessibility attributes. Generates annotated screenshots with bounding boxes.',
+    arch_l3b_title: 'Layer 3b — Layout Providers',
+    arch_l3b_desc: 'Strategy pattern: AccessibilityProvider (default) or JdwpProvider (deep mode) behind a shared LayoutProvider protocol.',
+    arch_arrow2: '&darr; ADB / uiautomator2 / JDWP &darr;',
+    arch_device_title: 'Android Device',
+    arch_device_desc: 'Physical device or emulator connected via USB or Wi-Fi ADB',
+
+    // Flow
+    flow_ai_title: 'AI Agent',
+    flow_ai_desc: 'Claude, GPT, etc.',
+    flow_mcp_title: 'MCP Protocol',
+    flow_mcp_desc: 'Tool calls & results',
+    flow_tools_title: 'Tool Handlers',
+    flow_tools_desc: '17 built-in tools',
+    flow_bridge_title: 'Device Bridge',
+    flow_bridge_desc: 'uiautomator2 / ADB',
+    flow_android_title: 'Android',
+    flow_android_desc: 'Real device / emulator',
+
+    // Config
+    config_label: 'Configuration',
+    config_title: 'Get Connected in Minutes',
+    config_desc: "Android MCP Pro supports flexible device targeting via CLI flags, environment variables, or the MCP bundle manifest's user_config schema.",
+    config_req_title: 'Requirements',
+    req_python_title: 'Python 3.13',
+    req_python_desc: 'Strictly ≥3.13, <3.14',
+    req_uv_title: 'UV Package Manager',
+    req_adb_title: 'ADB',
+    req_adb_desc: 'Android Debug Bridge on PATH',
+    req_device_title: 'Android Device',
+    req_device_desc: 'USB or Wi-Fi connected',
+    config_claude_title: 'Claude Desktop Configuration',
+    config_cli_title: 'CLI Flags',
+    cli_device_desc: 'Connect to a specific device by ADB serial number.',
+    cli_wifi_desc: 'Connect over Wi-Fi ADB. Port defaults to 5555 if omitted.',
+    cli_usb_desc: 'Force USB connection only. Auto-selects the first USB device.',
+    cli_deep_desc: 'Enable JDWP deep layout mode for full View properties (requires debuggable app).',
+    cli_debug_desc: 'Log all tool calls as JSON files for debugging.',
+    config_env_title: 'Environment Variables',
+    config_env_ref: 'Env Reference',
+    env_device: 'ADB serial or host:port',
+    env_connection: 'auto | usb | wifi',
+    env_host: 'Wi-Fi ADB host (used with connection=wifi)',
+    env_quantized: 'Compress screenshots to 256-color (1|true|yes)',
+    env_debug: 'Enable debug logging (1|true|yes)',
+    env_adb_path: 'Custom path to adb binary (default: adb)',
+
+    // Tools
+    tools_label: 'Tool Reference',
+    tools_title: '17 Built-In MCP Tools',
+    tools_desc: 'Every tool maps 1:1 to a real device action. Click, swipe, type, capture — everything an AI agent needs to operate an Android device like a human user.',
+    tag_meta: 'Meta',
+    tag_read: 'Read',
+    tag_action: 'Action',
+    tool_list_devices: 'List connected ADB devices and their state',
+    tool_connect_device: 'Connect to an ADB device by serial number',
+    tool_device: 'Manage devices: list, connect, or disconnect',
+    tool_snapshot: 'Get device state with optional annotated screenshot',
+    tool_layout_tree: 'Full view hierarchy as a tree of all UI elements',
+    tool_element_details: 'Detailed properties of a single UI element',
+    tool_spacing: 'Spacing & alignment between two UI elements',
+    tool_wait_element: 'Wait for a dynamic element to appear on screen',
+    tool_click: 'Click at a specific coordinate (x, y)',
+    tool_click_selector: 'Click by text, resourceId, className, or description',
+    tool_long_click: 'Long press at a specific coordinate',
+    tool_swipe: 'Swipe from (x1,y1) to (x2,y2)',
+    tool_type: 'Type text, optionally clearing existing content',
+    tool_drag: 'Drag from one location and drop on another',
+    tool_press: 'Press a hardware/software button (Back, Home, etc.)',
+    tool_notification: 'Open the device notification shade',
+    tool_wait: 'Wait for a specific number of seconds',
+
+    // Tool cards
+    card_res_id_title: 'Resource ID Auto-Expansion',
+    card_res_id_desc: "Short IDs like btn_login are automatically expanded to com.example.app:id/btn_login using the foreground app's package name.",
+    card_parallel_title: 'Parallel Data Capture',
+    card_parallel_desc: 'XML hierarchy dump and screenshot run in separate threads simultaneously for minimal latency.',
+    card_dp_title: 'DP-Aware Spacing',
+    card_dp_desc: 'Spacing calculations convert px to dp using the device\'s actual display density ratio.',
+
+    // Deep Mode
+    deep_label: 'Advanced',
+    deep_title: 'Deep Mode via JDWP',
+    deep_desc: 'The optional --deep flag switches the layout backend from the Accessibility API to JDWP (Java Debug Wire Protocol), unlocking real View properties the accessibility tree cannot expose.',
+    deep_default_title: 'Default Mode',
+    deep_default_tag: 'Accessibility',
+    deep_d_has1: 'Bounds, text, content-description',
+    deep_d_has2: 'Clickable / focusable / scrollable flags',
+    deep_d_has3: 'resource-id, class name',
+    deep_d_has4: 'index, package, checkable states',
+    deep_d_none1: 'No padding / margin / elevation',
+    deep_d_none2: 'No textSize / textColor',
+    deep_d_none3: 'No corner radius / background',
+    deep_deep_title: 'Deep Mode',
+    deep_deep_tag: 'JDWP',
+    deep_j_has1: 'Everything in default mode',
+    deep_j_has2: 'padding (top/left/right/bottom)',
+    deep_j_has3: 'margin, elevation, minHeight/Width',
+    deep_j_has4: 'textSize, textColor, hintText',
+    deep_j_has5: 'cornerRadius, background color',
+    deep_j_has6: 'visibility, enabled, alpha',
+    deep_j_partial: 'No content-description (falls back to text)',
+
+    // Deep cards
+    deep_card_how_title: 'How It Works',
+    deep_card_how_desc: 'A prebuilt Java fat-jar (deep-inspector.jar) connects to the debuggable process via ddmlib, dumps the View hierarchy as JSON, and pipes it to Python via stdout.',
+    deep_card_window_title: 'Window Selection',
+    deep_card_window_desc: 'Automatically targets the foreground Activity window using device.app_current(), avoiding stale background windows in multi-window processes.',
+    deep_card_req_title: 'Requirements',
+    deep_card_req_desc: 'Needs a debuggable app (debug build or userdebug device) and a JDK/JRE on PATH. Fails fast at startup if prerequisites are missing.',
+
+    // Quick Start
+    qs_label: 'Quick Start',
+    qs_title: 'Up and Running in 3 Steps',
+    qs_step1: '<strong>Step 1.</strong> Clone the repository.',
+    qs_step2: '<strong>Step 2.</strong> Install Python dependencies (requires Python 3.13 and UV).',
+    qs_step3: '<strong>Step 3.</strong> Start the MCP server. Replace &lt;serial&gt; with your device ID from adb devices.',
+    qs_card_run_title: 'Run without Local Install',
+    qs_card_run_desc: 'Use uvx android-mcp to run directly from PyPI without cloning the repo.',
+    qs_card_test_title: 'Run Tests',
+    qs_card_test_desc: 'uv run pytest tests/ for Python unit tests. cd java-deep-inspector && ./gradlew test for Java.',
+    qs_card_platform_title: 'Platform Support',
+    qs_card_platform_desc: 'Works on macOS, Linux, and Windows. On Windows, use Python 3.13 (3.14 has a known pywin32 dependency issue).',
+    qs_structure_title: 'Project Structure',
+    qs_dir_layout: 'Directory Layout',
+
+    // Tree comments
+    tree_main: '# MCP server entry point + 17 tool definitions',
+    tree_service: '# Mobile class (ADB, uiautomator2, screenshot)',
+    tree_views: '# MobileState, App dataclasses',
+    tree_tree_service: '# Tree parser (XML → element nodes)',
+    tree_tree_views: '# ElementNode, BoundingBox, TreeState',
+    tree_config: '# Interactive element detection rules',
+    tree_provider: '# LayoutProvider protocol',
+    tree_acc_prov: '# Default: accessibility tree',
+    tree_jdwp_prov: '# Deep mode: JDWP/Java bridge',
+    tree_jdwp_runner: '# Subprocess wrapper for deep-inspector.jar',
+    tree_models: '# DeepLayoutNode + tree renderer',
+    tree_java: '# Gradle project for JDWP deep inspector',
+    tree_jar: '# Checked-in fat-jar for --deep mode',
+    tree_manifest: '# MCP bundle manifest (v0.4)',
+    tree_pyproject: '# Python package config',
+
+    // Footer
+    footer_text: 'Android MCP Pro — Open-source under MIT License',
+    footer_issues: 'Issues'
+  },
+
+  zh: {
+    // Nav
+    nav_architecture: '架构',
+    nav_config: '配置',
+    nav_tools: '工具',
+    nav_deep: '深度模式<span class="nav-badge">新</span>',
+    nav_quickstart: '快速开始',
+
+    // Hero
+    hero_label: '模型上下文协议',
+    hero_title: '将 AI <em>智能体</em><br>连接到 Android 设备',
+    hero_desc: '一个轻量级的开源 MCP 服务器，让 LLM 智能体能在 Android 上执行真实任务——应用导航、UI 交互、自动化 QA 测试——无需计算机视觉流水线或预编程脚本。',
+    hero_cta_primary: '开始使用 &rarr;',
+    hero_cta_secondary: '在 GitHub 上查看',
+    stat_tools: 'MCP 工具',
+    stat_latency: '平均延迟',
+    stat_platforms: '支持平台',
+    stat_license: '许可证',
+
+    // Architecture
+    arch_label: '实现原则',
+    arch_title: '三层架构',
+    arch_desc: '数据自上而下流动：从 AI 智能体通过 MCP 协议，进入专用工具处理器，下至 uiautomator2 和 ADB——然后以结构化结果返回。',
+    arch_l1_title: '第 1 层 — MCP 服务器',
+    arch_l1_desc: '入口点（__main__.py）。解析 CLI 参数，创建 FastMCP 实例，定义 17 个工具函数。首次调用时延迟连接设备。',
+    arch_arrow1: '&darr; FastMCP 协议 &darr;',
+    arch_l2_title: '第 2 层 — 移动服务',
+    arch_l2_desc: 'ADB 设备列表、Wi-Fi 连接、uiautomator2 会话。通过线程并行捕获 XML + 截图。',
+    arch_l3a_title: '第 3a 层 — 树解析器',
+    arch_l3a_desc: '解析 Android UI XML。通过无障碍属性识别可交互元素。生成带边界框和编号标签的标注截图。',
+    arch_l3b_title: '第 3b 层 — 布局提供者',
+    arch_l3b_desc: '策略模式：AccessibilityProvider（默认）或 JdwpProvider（深度模式），共享 LayoutProvider 协议。',
+    arch_arrow2: '&darr; ADB / uiautomator2 / JDWP &darr;',
+    arch_device_title: 'Android 设备',
+    arch_device_desc: '通过 USB 或 Wi-Fi ADB 连接的物理设备或模拟器',
+
+    // Flow
+    flow_ai_title: 'AI 智能体',
+    flow_ai_desc: 'Claude、GPT 等',
+    flow_mcp_title: 'MCP 协议',
+    flow_mcp_desc: '工具调用与结果',
+    flow_tools_title: '工具处理器',
+    flow_tools_desc: '17 个内置工具',
+    flow_bridge_title: '设备桥接',
+    flow_bridge_desc: 'uiautomator2 / ADB',
+    flow_android_title: 'Android',
+    flow_android_desc: '真机 / 模拟器',
+
+    // Config
+    config_label: '配置',
+    config_title: '几分钟内完成连接',
+    config_desc: 'Android MCP Pro 支持通过 CLI 参数、环境变量或 MCP 包清单的 user_config 灵活指定目标设备。',
+    config_req_title: '环境要求',
+    req_python_title: 'Python 3.13',
+    req_python_desc: '严格要求 ≥3.13, <3.14',
+    req_uv_title: 'UV 包管理器',
+    req_adb_title: 'ADB',
+    req_adb_desc: 'Android 调试桥，需在 PATH 中',
+    req_device_title: 'Android 设备',
+    req_device_desc: 'USB 或 Wi-Fi 连接',
+    config_claude_title: 'Claude Desktop 配置',
+    config_cli_title: 'CLI 参数',
+    cli_device_desc: '通过 ADB 序列号连接到指定设备。',
+    cli_wifi_desc: '通过 Wi-Fi ADB 连接。省略端口时默认为 5555。',
+    cli_usb_desc: '仅限 USB 连接。自动选择第一个 USB 设备。',
+    cli_deep_desc: '启用 JDWP 深度布局模式，获取完整 View 属性（需要可调试应用）。',
+    cli_debug_desc: '将所有工具调用记录为 JSON 文件用于调试。',
+    config_env_title: '环境变量',
+    config_env_ref: '环境变量参考',
+    env_device: 'ADB 序列号或 host:port',
+    env_connection: 'auto | usb | wifi',
+    env_host: 'Wi-Fi ADB 主机地址（与 connection=wifi 配合使用）',
+    env_quantized: '将截图压缩为 256 色（1|true|yes）',
+    env_debug: '启用调试日志（1|true|yes）',
+    env_adb_path: 'adb 可执行文件的自定义路径（默认：adb）',
+
+    // Tools
+    tools_label: '工具参考',
+    tools_title: '17 个内置 MCP 工具',
+    tools_desc: '每个工具与真实设备操作一一对应。点击、滑动、输入、截屏——AI 智能体操作 Android 设备所需的一切。',
+    tag_meta: '元信息',
+    tag_read: '读取',
+    tag_action: '操作',
+    tool_list_devices: '列出已连接的 ADB 设备及其状态',
+    tool_connect_device: '通过序列号连接到 ADB 设备',
+    tool_device: '管理设备：列表、连接或断开',
+    tool_snapshot: '获取设备状态，含可选的标注截图',
+    tool_layout_tree: '完整的视图层次结构，包含所有 UI 元素',
+    tool_element_details: '单个 UI 元素的详细属性',
+    tool_spacing: '两个 UI 元素之间的间距与对齐',
+    tool_wait_element: '等待动态元素出现在屏幕上',
+    tool_click: '点击指定坐标 (x, y)',
+    tool_click_selector: '通过 text、resourceId、className 或 description 点击',
+    tool_long_click: '长按指定坐标',
+    tool_swipe: '从 (x1,y1) 滑动到 (x2,y2)',
+    tool_type: '输入文本，可选择清除已有内容',
+    tool_drag: '从一个位置拖放到另一个位置',
+    tool_press: '按下硬件/软件按键（返回、主页等）',
+    tool_notification: '打开设备通知栏',
+    tool_wait: '等待指定的秒数',
+
+    // Tool cards
+    card_res_id_title: '资源 ID 自动扩展',
+    card_res_id_desc: '短 ID 如 btn_login 会自动扩展为 com.example.app:id/btn_login，使用前台应用的包名。',
+    card_parallel_title: '并行数据捕获',
+    card_parallel_desc: 'XML 层次结构转储和截图在独立线程中同时运行，实现最低延迟。',
+    card_dp_title: 'DP 感知间距',
+    card_dp_desc: '间距计算使用设备实际显示密度比将 px 转换为 dp。',
+
+    // Deep Mode
+    deep_label: '高级功能',
+    deep_title: '通过 JDWP 的深度模式',
+    deep_desc: '可选的 --deep 参数将布局后端从无障碍 API 切换到 JDWP（Java 调试连线协议），解锁无障碍树无法暴露的真实 View 属性。',
+    deep_default_title: '默认模式',
+    deep_default_tag: '无障碍',
+    deep_d_has1: '边界、文本、content-description',
+    deep_d_has2: '可点击 / 可聚焦 / 可滚动标志',
+    deep_d_has3: 'resource-id、类名',
+    deep_d_has4: '索引、包名、可勾选状态',
+    deep_d_none1: '无 padding / margin / elevation',
+    deep_d_none2: '无 textSize / textColor',
+    deep_d_none3: '无圆角 / 背景',
+    deep_deep_title: '深度模式',
+    deep_deep_tag: 'JDWP',
+    deep_j_has1: '包含默认模式的所有内容',
+    deep_j_has2: 'padding（上/左/右/下）',
+    deep_j_has3: 'margin、elevation、minHeight/Width',
+    deep_j_has4: 'textSize、textColor、hintText',
+    deep_j_has5: 'cornerRadius、背景色',
+    deep_j_has6: 'visibility、enabled、alpha',
+    deep_j_partial: '无 content-description（回退到 text）',
+
+    // Deep cards
+    deep_card_how_title: '工作原理',
+    deep_card_how_desc: '预构建的 Java fat-jar（deep-inspector.jar）通过 ddmlib 连接到可调试进程，将 View 层次结构转储为 JSON，并通过 stdout 管道传递给 Python。',
+    deep_card_window_title: '窗口选择',
+    deep_card_window_desc: '使用 device.app_current() 自动定位前台 Activity 窗口，避免多窗口进程中过时的后台窗口。',
+    deep_card_req_title: '要求',
+    deep_card_req_desc: '需要可调试的应用（debug 构建或 userdebug 设备）以及 PATH 中有 JDK/JRE。启动时若缺少前置条件会立即失败。',
+
+    // Quick Start
+    qs_label: '快速开始',
+    qs_title: '三步即可运行',
+    qs_step1: '<strong>第 1 步。</strong>克隆仓库。',
+    qs_step2: '<strong>第 2 步。</strong>安装 Python 依赖（需要 Python 3.13 和 UV）。',
+    qs_step3: '<strong>第 3 步。</strong>启动 MCP 服务器。将 &lt;serial&gt; 替换为 adb devices 中的设备 ID。',
+    qs_card_run_title: '无需本地安装即可运行',
+    qs_card_run_desc: '使用 uvx android-mcp 直接从 PyPI 运行，无需克隆仓库。',
+    qs_card_test_title: '运行测试',
+    qs_card_test_desc: 'uv run pytest tests/ 运行 Python 单元测试。cd java-deep-inspector && ./gradlew test 运行 Java 测试。',
+    qs_card_platform_title: '平台支持',
+    qs_card_platform_desc: '支持 macOS、Linux 和 Windows。在 Windows 上请使用 Python 3.13（3.14 存在已知的 pywin32 依赖问题）。',
+    qs_structure_title: '项目结构',
+    qs_dir_layout: '目录结构',
+
+    // Tree comments
+    tree_main: '# MCP 服务器入口 + 17 个工具定义',
+    tree_service: '# Mobile 类（ADB、uiautomator2、截图）',
+    tree_views: '# MobileState、App 数据类',
+    tree_tree_service: '# 树解析器（XML → 元素节点）',
+    tree_tree_views: '# ElementNode、BoundingBox、TreeState',
+    tree_config: '# 可交互元素检测规则',
+    tree_provider: '# LayoutProvider 协议',
+    tree_acc_prov: '# 默认：无障碍树',
+    tree_jdwp_prov: '# 深度模式：JDWP/Java 桥接',
+    tree_jdwp_runner: '# deep-inspector.jar 的子进程封装',
+    tree_models: '# DeepLayoutNode + 树渲染器',
+    tree_java: '# JDWP 深度检测器的 Gradle 项目',
+    tree_jar: '# 已提交的 fat-jar，用于 --deep 模式',
+    tree_manifest: '# MCP 包清单（v0.4）',
+    tree_pyproject: '# Python 包配置',
+
+    // Footer
+    footer_text: 'Android MCP Pro — MIT 许可证开源',
+    footer_issues: '问题'
+  }
+};
+
+// ── Language Switching ──
+function setLang(lang) {
+  const translations = I18N[lang];
+  if (!translations) return;
+
+  document.documentElement.lang = lang;
+  localStorage.setItem('lang', lang);
+
+  document.getElementById('langEn').classList.toggle('active', lang === 'en');
+  document.getElementById('langZh').classList.toggle('active', lang === 'zh');
+
+  // Update page title
+  document.title = lang === 'zh'
+    ? 'Android MCP Pro — 将 AI 智能体连接到 Android 设备'
+    : 'Android MCP Pro — Bridge AI Agents to Android Devices';
+
+  // Apply translations
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[key] !== undefined) {
+      el.textContent = translations[key];
+    }
+  });
+
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.getAttribute('data-i18n-html');
+    if (translations[key] !== undefined) {
+      el.innerHTML = translations[key];
+    }
+  });
+}
+
+// ── Init ──
+(function() {
+  const saved = localStorage.getItem('lang') || 'en';
+  if (saved !== 'en') setLang(saved);
+
+  // Sticky nav shadow on scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 10);
+  }, { passive: true });
+
+  // Intersection observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.section-inner > *').forEach((el, i) => {
+    if (el.classList.contains('section-label') || el.classList.contains('section-title') || el.classList.contains('section-desc')) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity .5s ease ${i * .05}s, transform .5s ease ${i * .05}s`;
+      observer.observe(el);
+    }
+  });
+
+  // Animate cards and tools on scroll
+  document.querySelectorAll('.card, .tool-item, .cli-item, .config-block, .req-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity .4s ease, transform .4s ease';
+    observer.observe(el);
+  });
+})();
+</script>
+</body>
+</html>
