@@ -31,6 +31,7 @@ def test_get_layout_tree_includes_window_header():
     out = prov.get_layout_tree()
     header = out.splitlines()[0]
     assert header.startswith("[window]")
+    assert "mode=accessibility" in header
     assert "package=com.x" in header
     assert "activity=.MainActivity" in header
 

@@ -51,6 +51,7 @@ def test_get_layout_tree_header_includes_package_and_window(monkeypatch):
     out = prov.get_layout_tree()
     header = out.splitlines()[0]
     assert header.startswith("[window]")
+    assert "mode=deep" in header
     assert "package=com.x" in header
     assert "window=w" in header
 
@@ -83,6 +84,7 @@ def test_get_layout_tree_filter_no_match(monkeypatch):
 def test_get_element_details_by_resourceid(monkeypatch):
     prov = make_provider(monkeypatch)
     out = prov.get_element_details("resourceId", "title")
+    assert out.startswith("mode: deep")
     assert "android.widget.TextView" in out
     assert "paddingLeft" in out or "padding=" in out
 

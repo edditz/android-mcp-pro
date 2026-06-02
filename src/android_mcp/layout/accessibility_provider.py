@@ -95,9 +95,10 @@ class AccessibilityProvider:
 
         try:
             current = device.app_current()
-            header = format_window_header(current.get("package", ""), current.get("activity", ""))
+            header = format_window_header(current.get("package", ""),
+                                          current.get("activity", ""), mode="accessibility")
         except Exception:
-            header = format_window_header("", "")
+            header = format_window_header("", "", mode="accessibility")
         return header + "\n" + Tree.format_layout_tree(layout_root)
 
     def get_element_details(self, selector_type: str, selector_value: str,
@@ -130,6 +131,7 @@ class AccessibilityProvider:
         height_dp = round(height_px / scale)
 
         lines = [
+            "mode: accessibility",
             f"class: {info.get('className', '')}",
             f"resource-id: {info.get('resourceName', '')}",
             f"text: {info.get('text', '')}",

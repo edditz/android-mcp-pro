@@ -115,7 +115,8 @@ class JdwpProvider:
             root = _filter(root, filter_class)
             if root is None:
                 return f"No elements matching class '{filter_class}' found."
-        header = format_window_header(meta["package"], meta["activity"], meta["window"])
+        header = format_window_header(meta["package"], meta["activity"], meta["window"],
+                                      mode="deep")
         return header + "\n" + format_deep_tree(root)
 
     def get_element_details(self, selector_type: str, selector_value: str, timeout: float = 5.0) -> str:
@@ -137,7 +138,7 @@ class JdwpProvider:
                     if selector_type == "description" else "")
             return (f"ELEMENT_NOT_FOUND: no node with {selector_type}='{selector_value}'"
                     f"{note} in the deep tree.")
-        result = _format_element(node)
+        result = "mode: deep\n" + _format_element(node)
         if selector_type == "description":
             result = ("note: deep mode has no content-desc; matched on text instead\n"
                       + result)
