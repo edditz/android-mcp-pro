@@ -344,10 +344,25 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
       </div>
     </div>
 
-    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_claude_title">Claude Desktop Configuration</h3>
-    <div class="config-block">
+    <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_claudecode_title">Claude Code Configuration</h3>
+    <p style="margin-top:12px;color:var(--text-secondary);font-size:.92rem;line-height:1.7" data-i18n-html="config_claudecode_desc">Register the server with the Claude Code CLI, or commit a project-level <code>.mcp.json</code> so your team shares the same setup.</p>
+    <div class="config-block" style="margin-top:16px">
       <div class="config-header">
-        <h4><span style="color:var(--text-muted)">&#9632;</span> claude_desktop_config.json</h4>
+        <h4><span style="color:var(--text-muted)">&#9632;</span> <span data-i18n="config_cc_terminal">Terminal</span></h4>
+        <span class="badge">CLI</span>
+      </div>
+      <div class="config-body">
+<pre><span class="comment" data-i18n="config_cc_cli_comment"># add the MCP server (user scope by default)</span>
+<span style="color:var(--accent)">$</span> claude mcp add android <span class="bool">-e</span> <span class="str">ANDROID_MCP_DEVICE=emulator-5554</span> \
+    -- uv --directory <span class="str">/path/to/android-mcp-pro</span> run android-mcp
+
+<span class="comment" data-i18n="config_cc_cli_comment2"># verify it is registered and reachable</span>
+<span style="color:var(--accent)">$</span> claude mcp list</pre>
+      </div>
+    </div>
+    <div class="config-block" style="margin-top:16px">
+      <div class="config-header">
+        <h4><span style="color:var(--text-muted)">&#9632;</span> .mcp.json</h4>
         <span class="badge">JSON</span>
       </div>
       <div class="config-body">
@@ -357,15 +372,18 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
       <span class="key">"command"</span>: <span class="str">"uv"</span>,
       <span class="key">"args"</span>: [<span class="str">"--directory"</span>, <span class="str">"/path/to/android-mcp-pro"</span>, <span class="str">"run"</span>, <span class="str">"android-mcp"</span>],
       <span class="key">"env"</span>: {
-        <span class="key">"UV_NO_SYNC"</span>: <span class="str">"1"</span>,
         <span class="key">"ANDROID_MCP_DEVICE"</span>: <span class="str">"emulator-5554"</span>,
-        <span class="key">"ANDROID_MCP_CONNECTION"</span>: <span class="str">"auto"</span>,
-        <span class="key">"SCREENSHOT_QUANTIZED"</span>: <span class="str">"false"</span>
+        <span class="key">"ANDROID_MCP_CONNECTION"</span>: <span class="str">"auto"</span>
       }
     }
   }
 }</pre>
       </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px 18px;background:var(--accent-light);border-radius:var(--radius-sm);display:flex;gap:10px;font-size:.85rem;color:var(--accent-dark);line-height:1.6">
+      <span style="font-weight:700;flex-shrink:0">&#9432;</span>
+      <span data-i18n-html="config_cc_note">No Java path setup is needed. The MCP server itself only requires Python &amp; UV. Deep mode (<code>--deep</code>) additionally needs <code>java</code> on your <code>PATH</code> — the path is auto-detected, not configured.</span>
     </div>
 
     <h3 style="margin-top:48px;font-family:var(--font-display);font-size:1.3rem" data-i18n="config_cli_title">CLI Flags</h3>
@@ -667,7 +685,12 @@ const I18N = {
     req_adb_desc: 'Android Debug Bridge on PATH',
     req_device_title: 'Android Device',
     req_device_desc: 'USB or Wi-Fi connected',
-    config_claude_title: 'Claude Desktop Configuration',
+    config_claudecode_title: 'Claude Code Configuration',
+    config_claudecode_desc: 'Register the server with the Claude Code CLI, or commit a project-level <code>.mcp.json</code> so your team shares the same setup.',
+    config_cc_terminal: 'Terminal',
+    config_cc_cli_comment: '# add the MCP server (user scope by default)',
+    config_cc_cli_comment2: '# verify it is registered and reachable',
+    config_cc_note: 'No Java path setup is needed. The MCP server itself only requires Python &amp; UV. Deep mode (<code>--deep</code>) additionally needs <code>java</code> on your <code>PATH</code> — the path is auto-detected, not configured.',
     config_cli_title: 'CLI Flags',
     cli_device_desc: 'Connect to a specific device by ADB serial number.',
     cli_wifi_desc: 'Connect over Wi-Fi ADB. Port defaults to 5555 if omitted.',
@@ -844,7 +867,12 @@ const I18N = {
     req_adb_desc: 'Android 调试桥，需在 PATH 中',
     req_device_title: 'Android 设备',
     req_device_desc: 'USB 或 Wi-Fi 连接',
-    config_claude_title: 'Claude Desktop 配置',
+    config_claudecode_title: 'Claude Code 配置',
+    config_claudecode_desc: '通过 Claude Code CLI 注册服务器，或提交项目级 <code>.mcp.json</code> 让团队共享同一套配置。',
+    config_cc_terminal: '终端',
+    config_cc_cli_comment: '# 添加 MCP 服务器(默认 user 作用域)',
+    config_cc_cli_comment2: '# 验证是否注册成功且可连通',
+    config_cc_note: '无需配置 Java 路径。MCP 服务器本身只需 Python 和 UV。深度模式(<code>--deep</code>)额外需要 <code>java</code> 在你的 <code>PATH</code> 上 —— 路径会自动检测,无需手动指定。',
     config_cli_title: 'CLI 参数',
     cli_device_desc: '通过 ADB 序列号连接到指定设备。',
     cli_wifi_desc: '通过 Wi-Fi ADB 连接。省略端口时默认为 5555。',
