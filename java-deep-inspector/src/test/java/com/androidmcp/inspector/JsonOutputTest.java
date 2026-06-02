@@ -49,6 +49,33 @@ class JsonOutputTest {
     }
 
     @Test
+    void convertsSignedArgbIntToHex() {
+        assertEquals("#FF000000", JsonOutput.toHexColor("-16777216"));   // opaque black
+        assertEquals("#99000000", JsonOutput.toHexColor("-1728053248")); // 60% black
+        assertEquals("#66000000", JsonOutput.toHexColor("1711276032"));  // 40% black
+        assertEquals("#FFFFFFFF", JsonOutput.toHexColor("-1"));          // opaque white
+        assertNull(JsonOutput.toHexColor(null));
+        assertNull(JsonOutput.toHexColor("not-a-number"));
+    }
+
+    @Test
+    void emitsTextColorAsHexForTextViews() {
+        ViewNode root = new ViewNode();
+        root.className = "android.widget.TextView";
+        root.props.put("text:mCurTextColor", "-16777216");
+        String json = JsonOutput.toJson(root, "com.x", "w", "V1");
+        assertTrue(json.contains("\"textColor\":\"#FF000000\""), json);
+    }
+
+    @Test
+    void omitsTextColorWhenAbsent() {
+        ViewNode root = new ViewNode();
+        root.className = "android.view.View";
+        String json = JsonOutput.toJson(root, "com.x", "w", "V1");
+        assertFalse(json.contains("textColor"), json);
+    }
+
+    @Test
     void nonFiniteNumbersAreQuotedNotBare() {
         ViewNode root = new ViewNode();
         root.className = "android.view.View";

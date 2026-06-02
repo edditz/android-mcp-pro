@@ -71,7 +71,28 @@ public class JsonOutput {
             if (!first) sb.append(","); first = false;
             sb.append("\"cornerRadius\":").append(radius);
         }
+        // TextView's current text color, emitted as #AARRGGBB so a design review can
+        // compare it against Figma hex tokens directly. The raw value is a signed
+        // decimal ARGB int (ViewDebug exports it that way); only TextViews carry it.
+        String textColor = toHexColor(props.get("text:mCurTextColor"));
+        if (textColor != null) {
+            if (!first) sb.append(","); first = false;
+            sb.append("\"textColor\":").append(quote(textColor));
+        }
         sb.append("}");
+    }
+
+    /** Convert a signed decimal ARGB int (e.g. "-16777216") to "#AARRGGBB", or null
+     *  if the value is absent or unparseable. */
+    static String toHexColor(String decimal) {
+        if (decimal == null) return null;
+        try {
+            // parseLong tolerates the full signed-int range; mask back to 32 bits.
+            long argb = Long.parseLong(decimal.trim()) & 0xFFFFFFFFL;
+            return String.format("#%08X", argb);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     static Double parseRadius(String outline) {
