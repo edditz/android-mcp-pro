@@ -127,9 +127,12 @@ nav.scrolled{box-shadow:var(--shadow-sm)}
 
 /* ── Tool Table ── */
 .tools-grid{margin-top:40px;display:grid;gap:8px}
-.tool-item{display:grid;grid-template-columns:180px 1fr 80px;align-items:center;padding:14px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);transition:all .2s;gap:16px}
-.tool-item:hover{border-color:var(--accent);box-shadow:var(--shadow-sm)}
-.tool-name{font-family:var(--font-mono);font-size:.82rem;font-weight:500;color:var(--accent-dark)}
+.tool-item{display:grid;grid-template-columns:180px 1fr 80px;align-items:center;padding:14px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);transition:all .2s;gap:16px;text-decoration:none;color:inherit;cursor:pointer;position:relative}
+.tool-item:hover{border-color:var(--accent);box-shadow:var(--shadow-sm);transform:translateX(2px)}
+.tool-item:hover .tool-name{color:var(--accent)}
+.tool-item .tool-arrow{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--accent);opacity:0;transition:opacity .2s;font-size:.9rem;pointer-events:none}
+.tool-item:hover .tool-arrow{opacity:.6}
+.tool-name{font-family:var(--font-mono);font-size:.82rem;font-weight:500;color:var(--accent-dark);transition:color .2s}
 .tool-desc{font-size:.82rem;color:var(--text-secondary)}
 .tool-tag{font-size:.65rem;font-weight:600;padding:3px 10px;border-radius:4px;text-align:center}
 .tool-tag.ro{background:#E8F8EF;color:#2D8A56}
@@ -415,23 +418,23 @@ footer{padding:48px 32px;border-top:1px solid var(--border-light)}
     <p class="section-desc" data-i18n="tools_desc">Every tool maps 1:1 to a real device action. Click, swipe, type, capture — everything an AI agent needs to operate an Android device like a human user.</p>
 
     <div class="tools-grid">
-      <div class="tool-item"><span class="tool-name">ListDevices</span><span class="tool-desc" data-i18n="tool_list_devices">List connected ADB devices and their state</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span></div>
-      <div class="tool-item"><span class="tool-name">ConnectDevice</span><span class="tool-desc" data-i18n="tool_connect_device">Connect to an ADB device by serial number</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span></div>
-      <div class="tool-item"><span class="tool-name">Device</span><span class="tool-desc" data-i18n="tool_device">Manage devices: list, connect, or disconnect</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span></div>
-      <div class="tool-item"><span class="tool-name">Snapshot</span><span class="tool-desc" data-i18n="tool_snapshot">Get device state with optional annotated screenshot</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
-      <div class="tool-item"><span class="tool-name">GetLayoutTree</span><span class="tool-desc" data-i18n="tool_layout_tree">Full view hierarchy as a tree of all UI elements</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
-      <div class="tool-item"><span class="tool-name">GetElementDetails</span><span class="tool-desc" data-i18n="tool_element_details">Detailed properties of a single UI element</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
-      <div class="tool-item"><span class="tool-name">GetSpacing</span><span class="tool-desc" data-i18n="tool_spacing">Spacing &amp; alignment between two UI elements</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
-      <div class="tool-item"><span class="tool-name">WaitForElement</span><span class="tool-desc" data-i18n="tool_wait_element">Wait for a dynamic element to appear on screen</span><span class="tool-tag ro" data-i18n="tag_read">Read</span></div>
-      <div class="tool-item"><span class="tool-name">Click</span><span class="tool-desc" data-i18n="tool_click">Click at a specific coordinate (x, y)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">ClickBySelector</span><span class="tool-desc" data-i18n="tool_click_selector">Click by text, resourceId, className, or description</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">LongClick</span><span class="tool-desc" data-i18n="tool_long_click">Long press at a specific coordinate</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">Swipe</span><span class="tool-desc" data-i18n="tool_swipe">Swipe from (x1,y1) to (x2,y2)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">Type</span><span class="tool-desc" data-i18n="tool_type">Type text, optionally clearing existing content</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">Drag</span><span class="tool-desc" data-i18n="tool_drag">Drag from one location and drop on another</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">Press</span><span class="tool-desc" data-i18n="tool_press">Press a hardware/software button (Back, Home, etc.)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">Notification</span><span class="tool-desc" data-i18n="tool_notification">Open the device notification shade</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
-      <div class="tool-item"><span class="tool-name">Wait</span><span class="tool-desc" data-i18n="tool_wait">Wait for a specific number of seconds</span><span class="tool-tag rw" data-i18n="tag_action">Action</span></div>
+      <a class="tool-item" href="tools.html#ListDevices"><span class="tool-name">ListDevices</span><span class="tool-desc" data-i18n="tool_list_devices">List connected ADB devices and their state</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#ConnectDevice"><span class="tool-name">ConnectDevice</span><span class="tool-desc" data-i18n="tool_connect_device">Connect to an ADB device by serial number</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Device"><span class="tool-name">Device</span><span class="tool-desc" data-i18n="tool_device">Manage devices: list, connect, or disconnect</span><span class="tool-tag meta" data-i18n="tag_meta">Meta</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Snapshot"><span class="tool-name">Snapshot</span><span class="tool-desc" data-i18n="tool_snapshot">Get device state with optional annotated screenshot</span><span class="tool-tag ro" data-i18n="tag_read">Read</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#GetLayoutTree"><span class="tool-name">GetLayoutTree</span><span class="tool-desc" data-i18n="tool_layout_tree">Full view hierarchy as a tree of all UI elements</span><span class="tool-tag ro" data-i18n="tag_read">Read</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#GetElementDetails"><span class="tool-name">GetElementDetails</span><span class="tool-desc" data-i18n="tool_element_details">Detailed properties of a single UI element</span><span class="tool-tag ro" data-i18n="tag_read">Read</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#GetSpacing"><span class="tool-name">GetSpacing</span><span class="tool-desc" data-i18n="tool_spacing">Spacing &amp; alignment between two UI elements</span><span class="tool-tag ro" data-i18n="tag_read">Read</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#WaitForElement"><span class="tool-name">WaitForElement</span><span class="tool-desc" data-i18n="tool_wait_element">Wait for a dynamic element to appear on screen</span><span class="tool-tag ro" data-i18n="tag_read">Read</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Click"><span class="tool-name">Click</span><span class="tool-desc" data-i18n="tool_click">Click at a specific coordinate (x, y)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#ClickBySelector"><span class="tool-name">ClickBySelector</span><span class="tool-desc" data-i18n="tool_click_selector">Click by text, resourceId, className, or description</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#LongClick"><span class="tool-name">LongClick</span><span class="tool-desc" data-i18n="tool_long_click">Long press at a specific coordinate</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Swipe"><span class="tool-name">Swipe</span><span class="tool-desc" data-i18n="tool_swipe">Swipe from (x1,y1) to (x2,y2)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Type"><span class="tool-name">Type</span><span class="tool-desc" data-i18n="tool_type">Type text, optionally clearing existing content</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Drag"><span class="tool-name">Drag</span><span class="tool-desc" data-i18n="tool_drag">Drag from one location and drop on another</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Press"><span class="tool-name">Press</span><span class="tool-desc" data-i18n="tool_press">Press a hardware/software button (Back, Home, etc.)</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Notification"><span class="tool-name">Notification</span><span class="tool-desc" data-i18n="tool_notification">Open the device notification shade</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
+      <a class="tool-item" href="tools.html#Wait"><span class="tool-name">Wait</span><span class="tool-desc" data-i18n="tool_wait">Wait for a specific number of seconds</span><span class="tool-tag rw" data-i18n="tag_action">Action</span><span class="tool-arrow">&rarr;</span></a>
     </div>
 
     <div class="cards" style="margin-top:48px">

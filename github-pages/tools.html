@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tool Reference — Android MCP Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#FAFAF8;--bg-card:#FFFFFF;--bg-code:#F5F5F0;--bg-code-dark:#1C2128;
+  --text:#1A1A1A;--text-secondary:#6B6B6B;--text-muted:#9B9B9B;
+  --accent:#2D7D9A;--accent-light:#E8F4F8;--accent-dark:#1B5E75;
+  --border:#E8E8E4;--border-light:#F0F0EC;
+  --green:#2D8A56;--green-light:#E8F8EF;
+  --amber:#A67C00;--amber-light:#FFF8E8;
+  --red:#C43D3D;--red-light:#FFF0F0;
+  --purple:#6B4FA0;--purple-light:#F3EEFF;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 24px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 48px rgba(0,0,0,.08);
+  --radius:12px;--radius-sm:8px;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','SF Mono',monospace;
+}
+html{scroll-behavior:smooth;font-size:16px;scroll-padding-top:80px}
+body{font-family:var(--font-body);color:var(--text);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-light);color:var(--accent-dark)}
+a{color:inherit}
+
+/* ── Navigation ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,250,248,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border-light);transition:box-shadow .3s}
+nav.scrolled{box-shadow:var(--shadow-sm)}
+.nav-inner{max-width:1180px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav-brand{font-family:var(--font-display);font-size:1.25rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+.nav-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.nav-links{display:flex;gap:28px;list-style:none;align-items:center}
+.nav-links a{font-size:.875rem;font-weight:500;color:var(--text-secondary);text-decoration:none;transition:color .2s;letter-spacing:.01em}
+.nav-links a:hover{color:var(--accent)}
+.nav-links a.active{color:var(--accent)}
+.lang-toggle{display:flex;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:.8rem;font-weight:500}
+.lang-toggle button{padding:6px 12px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-family:var(--font-body);font-size:.78rem;font-weight:500;transition:all .2s;letter-spacing:.02em}
+.lang-toggle button:hover{color:var(--accent)}
+.lang-toggle button.active{background:var(--accent);color:#fff}
+
+/* ── Layout shell ── */
+.shell{max-width:1180px;margin:0 auto;padding:92px 32px 80px;display:grid;grid-template-columns:240px 1fr;gap:48px;align-items:start}
+
+/* ── Page header ── */
+.page-head{grid-column:1/-1;margin-bottom:8px}
+.page-head .crumb{font-size:.8rem;color:var(--text-muted);margin-bottom:16px}
+.page-head .crumb a{color:var(--accent);text-decoration:none}
+.page-head .crumb a:hover{text-decoration:underline}
+.page-label{font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+.page-title{font-family:var(--font-display);font-size:clamp(2.2rem,4.5vw,3rem);line-height:1.1;letter-spacing:-.01em;margin-bottom:16px}
+.page-title em{font-style:italic;color:var(--accent)}
+.page-desc{color:var(--text-secondary);font-size:1.05rem;max-width:680px;line-height:1.8}
+.page-meta{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}
+.meta-chip{font-size:.72rem;font-family:var(--font-mono);padding:5px 12px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary)}
+.meta-chip b{color:var(--accent-dark);font-weight:600}
+
+/* ── Sidebar TOC ── */
+.toc{position:sticky;top:92px;align-self:start}
+.toc h4{font-size:.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin:0 0 12px 12px}
+.toc-group+.toc-group{margin-top:20px}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:1px}
+.toc-list a{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:.78rem;color:var(--text-secondary);text-decoration:none;padding:6px 12px;border-radius:6px;border-left:2px solid transparent;transition:all .15s}
+.toc-list a:hover{background:var(--bg-card);color:var(--accent)}
+.toc-list a.active{background:var(--accent-light);color:var(--accent-dark);border-left-color:var(--accent);font-weight:500}
+.toc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.toc-dot.meta{background:var(--accent)}
+.toc-dot.ro{background:var(--green)}
+.toc-dot.rw{background:var(--amber)}
+
+/* ── Tool content ── */
+.tools-content{min-width:0;display:flex;flex-direction:column;gap:24px}
+.group-heading{font-family:var(--font-display);font-size:1.5rem;color:var(--text);padding-bottom:10px;border-bottom:1px solid var(--border);margin-top:24px;display:flex;align-items:center;gap:12px}
+.group-heading:first-child{margin-top:0}
+.group-heading .count{font-family:var(--font-body);font-size:.7rem;font-weight:600;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);padding:3px 10px;border-radius:20px}
+
+/* ── Tool card ── */
+.tool{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;scroll-margin-top:84px;transition:box-shadow .25s,border-color .25s}
+.tool:target{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.tool-head{padding:22px 28px;border-bottom:1px solid var(--border-light);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.tool-head-left{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tool-title{font-family:var(--font-mono);font-size:1.15rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tool-anchor{color:var(--text-muted);text-decoration:none;font-size:.9rem;opacity:0;transition:opacity .2s}
+.tool:hover .tool-anchor{opacity:1}
+.tool-anchor:hover{color:var(--accent)}
+.tool-summary{font-size:.88rem;color:var(--text-secondary);line-height:1.6}
+.tool-tag{font-size:.62rem;font-weight:600;padding:4px 11px;border-radius:5px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;flex-shrink:0}
+.tool-tag.ro{background:var(--green-light);color:var(--green)}
+.tool-tag.rw{background:var(--amber-light);color:var(--amber)}
+.tool-tag.meta{background:var(--accent-light);color:var(--accent-dark)}
+.tool-body{padding:24px 28px}
+
+/* ── Block labels ── */
+.block-label{font-size:.68rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.block-label::after{content:'';flex:1;height:1px;background:var(--border-light)}
+.block+.block{margin-top:26px}
+
+/* ── Params table ── */
+.params{width:100%;border-collapse:collapse;font-size:.84rem}
+.params th{text-align:left;font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:0 14px 8px 0;border-bottom:1px solid var(--border-light)}
+.params td{padding:11px 14px 11px 0;border-bottom:1px solid var(--border-light);vertical-align:top}
+.params tr:last-child td{border-bottom:none}
+.params .p-name{font-family:var(--font-mono);font-weight:500;color:var(--accent-dark);white-space:nowrap}
+.params .p-type{font-family:var(--font-mono);font-size:.78rem;color:var(--purple);white-space:nowrap}
+.params .p-default{font-family:var(--font-mono);font-size:.78rem;color:var(--text-muted);white-space:nowrap}
+.params .p-req{font-size:.68rem;font-weight:600}
+.params .p-req.yes{color:var(--red)}
+.params .p-req.no{color:var(--text-muted)}
+.params .p-desc{color:var(--text-secondary);line-height:1.55}
+.no-params{font-size:.84rem;color:var(--text-muted);font-style:italic;padding:4px 0}
+
+/* ── Return format pills ── */
+.ret-format{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.84rem;color:var(--text-secondary)}
+.ret-type{font-family:var(--font-mono);font-size:.76rem;font-weight:600;padding:4px 10px;border-radius:5px;background:var(--purple-light);color:var(--purple)}
+.ret-note{line-height:1.6}
+
+/* ── Code block ── */
+.code{position:relative;background:var(--bg-code-dark);border-radius:var(--radius-sm);overflow:hidden;margin-top:4px}
+.code-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
+.code-bar .dots{display:flex;gap:6px}
+.code-bar .dots span{width:9px;height:9px;border-radius:50%;display:block}
+.code-bar .dots span:nth-child(1){background:#FF5F56}
+.code-bar .dots span:nth-child(2){background:#FFBD2E}
+.code-bar .dots span:nth-child(3){background:#27C93F}
+.code-bar .tag{font-family:var(--font-mono);font-size:.68rem;color:rgba(255,255,255,.4);letter-spacing:.04em}
+.code pre{padding:16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:.78rem;line-height:1.65;color:#C9D1D9;tab-size:2}
+.code pre .c-key{color:#79C0FF}
+.code pre .c-str{color:#A5D6A7}
+.code pre .c-num{color:#F0883E}
+.code pre .c-com{color:#6E7681;font-style:italic}
+.code pre .c-punc{color:#8B949E}
+.code-call{background:var(--bg-code)}
+.code-call pre{color:var(--text);font-size:.8rem}
+.code-call pre .c-key{color:var(--accent-dark)}
+.code-call pre .c-str{color:var(--green)}
+.code-call pre .c-num{color:var(--purple)}
+.code-call pre .c-com{color:var(--text-muted)}
+.code-call pre .c-punc{color:var(--text-secondary)}
+
+/* ── Inline note ── */
+.tool-note{margin-top:18px;padding:12px 16px;background:var(--accent-light);border-radius:var(--radius-sm);font-size:.8rem;color:var(--accent-dark);line-height:1.6;display:flex;gap:10px}
+.tool-note .ico{flex-shrink:0;font-weight:700}
+.tool-note.warn{background:var(--amber-light);color:var(--amber)}
+
+/* ── Footer ── */
+footer{padding:48px 32px;border-top:1px solid var(--border-light)}
+.footer-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.footer-inner p{font-size:.8rem;color:var(--text-muted)}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:.8rem;color:var(--text-secondary);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+
+/* ── Back to top ── */
+.to-top{position:fixed;bottom:28px;right:28px;width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity .3s,transform .2s;z-index:90}
+.to-top.show{opacity:1;pointer-events:auto}
+.to-top:hover{background:var(--accent-dark);transform:translateY(-2px)}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr;gap:28px;padding-top:80px}
+  .toc{position:static;order:-1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+  .toc-list{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .toc-list a{border-left:none;border:1px solid var(--border-light)}
+  .toc-list a.active{border-color:var(--accent)}
+}
+@media(max-width:768px){
+  .nav-links li:not(:last-child){display:none}
+  .tool-head{flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand"><span class="dot"></span>Android MCP Pro</a>
+    <ul class="nav-links">
+      <li><a href="index.html#architecture" data-i18n="nav_architecture">Architecture</a></li>
+      <li><a href="index.html#config" data-i18n="nav_config">Configuration</a></li>
+      <li><a href="tools.html" class="active" data-i18n="nav_tools">Tools</a></li>
+      <li><a href="index.html#deep" data-i18n="nav_deep">Deep Mode</a></li>
+      <li><a href="index.html#quickstart" data-i18n="nav_quickstart">Quick Start</a></li>
+      <li>
+        <div class="lang-toggle">
+          <button id="langEn" class="active" onclick="setLang('en')">EN</button>
+          <button id="langZh" onclick="setLang('zh')">中文</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- ═══ PAGE HEADER ═══ -->
+  <header class="page-head">
+    <p class="crumb"><a href="index.html" data-i18n="crumb_home">Home</a> &nbsp;/&nbsp; <span data-i18n="crumb_tools">Tool Reference</span></p>
+    <p class="page-label" data-i18n="page_label">Complete API Reference</p>
+    <h1 class="page-title" data-i18n-html="page_title">Every tool, <em>documented</em></h1>
+    <p class="page-desc" data-i18n="page_desc">All 17 MCP tools with their parameters, return formats, and real response examples captured from a live device. Each tool maps 1:1 to a concrete Android action.</p>
+    <div class="page-meta">
+      <span class="meta-chip" data-i18n-html="meta_tools"><b>17</b> tools</span>
+      <span class="meta-chip" data-i18n-html="meta_examples"><b>Live</b> response samples</span>
+      <span class="meta-chip" data-i18n-html="meta_deep"><b>deep</b> mode properties shown</span>
+    </div>
+  </header>
+
+  <!-- ═══ SIDEBAR TOC ═══ -->
+  <aside class="toc">
+    <div class="toc-group">
+      <h4 data-i18n="toc_meta">Device / Meta</h4>
+      <ul class="toc-list">
+        <li><a href="#ListDevices"><span class="toc-dot meta"></span>ListDevices</a></li>
+        <li><a href="#ConnectDevice"><span class="toc-dot meta"></span>ConnectDevice</a></li>
+        <li><a href="#Device"><span class="toc-dot meta"></span>Device</a></li>
+      </ul>
+    </div>
+    <div class="toc-group">
+      <h4 data-i18n="toc_read">Read / Inspect</h4>
+      <ul class="toc-list">
+        <li><a href="#Snapshot"><span class="toc-dot ro"></span>Snapshot</a></li>
+        <li><a href="#GetLayoutTree"><span class="toc-dot ro"></span>GetLayoutTree</a></li>
+        <li><a href="#GetElementDetails"><span class="toc-dot ro"></span>GetElementDetails</a></li>
+        <li><a href="#GetSpacing"><span class="toc-dot ro"></span>GetSpacing</a></li>
+        <li><a href="#WaitForElement"><span class="toc-dot ro"></span>WaitForElement</a></li>
+      </ul>
+    </div>
+    <div class="toc-group">
+      <h4 data-i18n="toc_action">Interaction / Action</h4>
+      <ul class="toc-list">
+        <li><a href="#Click"><span class="toc-dot rw"></span>Click</a></li>
+        <li><a href="#ClickBySelector"><span class="toc-dot rw"></span>ClickBySelector</a></li>
+        <li><a href="#LongClick"><span class="toc-dot rw"></span>LongClick</a></li>
+        <li><a href="#Swipe"><span class="toc-dot rw"></span>Swipe</a></li>
+        <li><a href="#Type"><span class="toc-dot rw"></span>Type</a></li>
+        <li><a href="#Drag"><span class="toc-dot rw"></span>Drag</a></li>
+        <li><a href="#Press"><span class="toc-dot rw"></span>Press</a></li>
+        <li><a href="#Notification"><span class="toc-dot rw"></span>Notification</a></li>
+        <li><a href="#Wait"><span class="toc-dot rw"></span>Wait</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- ═══ TOOL CONTENT ═══ -->
+  <main class="tools-content" id="toolContent">
+    <h2 class="group-heading" data-i18n-suffix="group_meta"><span data-i18n="group_meta">Device / Meta</span> <span class="count">3</span></h2>
+  <article class="tool" id="ListDevices">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">ListDevices<a class="tool-anchor" href="#ListDevices" aria-label="Link to ListDevices">#</a></div>
+        <p class="tool-summary" data-i18n="ListDevices_sum">List available ADB devices and their connection state.</p>
+      </div>
+      <span class="tool-tag meta" data-i18n="tag_meta">Meta</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <p class="no-params" data-i18n="no_params">No parameters.</p>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="ListDevices_ret">Tab-separated <code>serial\tstate</code> lines, one per device. Returns a guidance message when none are found.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>emulator-5554	device</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="ConnectDevice">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">ConnectDevice<a class="tool-anchor" href="#ConnectDevice" aria-label="Link to ConnectDevice">#</a></div>
+        <p class="tool-summary" data-i18n="ConnectDevice_sum">Connect to an ADB device by serial number. Wi-Fi serials (host:port) are auto-connected first.</p>
+      </div>
+      <span class="tool-tag meta" data-i18n="tag_meta">Meta</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">serial</td><td class="p-type">str</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="ConnectDevice_p_serial">ADB serial, or <code>host:port</code> for Wi-Fi ADB.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="ConnectDevice_ret">Confirmation string with the resolved target.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Connected to emulator-5554</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="Device">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Device<a class="tool-anchor" href="#Device" aria-label="Link to Device">#</a></div>
+        <p class="tool-summary" data-i18n="Device_sum">Unified device management: list, connect, or disconnect via a single action parameter.</p>
+      </div>
+      <span class="tool-tag meta" data-i18n="tag_meta">Meta</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">action</td><td class="p-type">"list" | "connect" | "disconnect"</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Device_p_action">Operation to perform.</td></tr><tr><td class="p-name">serial</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="Device_p_serial">Target serial for <code>connect</code>. Falls back to configured device when omitted.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Device_ret">For <code>list</code>: same as ListDevices. For <code>connect</code>/<code>disconnect</code>: a status line.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Connected to emulator-5554</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+    <h2 class="group-heading" data-i18n-suffix="group_read"><span data-i18n="group_read">Read / Inspect</span> <span class="count">5</span></h2>
+  <article class="tool" id="Snapshot">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Snapshot<a class="tool-anchor" href="#Snapshot" aria-label="Link to Snapshot">#</a></div>
+        <p class="tool-summary" data-i18n="Snapshot_sum">Capture device state: a labeled table of interactive elements, plus an optional (annotated) screenshot.</p>
+      </div>
+      <span class="tool-tag ro" data-i18n="tag_ro">Read</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">use_vision</td><td class="p-type">bool</td><td class="p-default">False</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="Snapshot_p_use_vision">Include a PNG screenshot in the result.</td></tr><tr><td class="p-name">use_annotation</td><td class="p-type">bool</td><td class="p-default">True</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="Snapshot_p_use_annotation">Draw bounding boxes + numbered labels on the screenshot.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string[] (+ Image)</span>
+          <span class="ret-note" data-i18n-html="Snapshot_ret">A text table of labeled elements (Label / Name / ResourceId / Class / Coordinates). When <code>use_vision=true</code>, a PNG image is appended.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>  Label  Name                    ResourceId         Class                        Coordinates
+      0  Note title  Sample note body text                  android.webkit.WebView       (600,1335)
+      5  返回                      up                 android.widget.Button        (116,219)
+      9  帮我检查这篇笔记有没有错误      guide_question_1   android.widget.TextView      (414,717)
+     12  行程计划                                       android.widget.LinearLayout  (208,2326)</pre>
+        </div>
+      </div>
+      <div class="tool-note"><span class="ico">&#9432;</span><span data-i18n-html="Snapshot_note">Coordinates are the element center — pass them straight to Click.</span></div>
+    </div>
+  </article>
+  <article class="tool" id="GetLayoutTree">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">GetLayoutTree<a class="tool-anchor" href="#GetLayoutTree" aria-label="Link to GetLayoutTree">#</a></div>
+        <p class="tool-summary" data-i18n="GetLayoutTree_sum">Full view hierarchy as an indented tree, including containers (FrameLayout, LinearLayout, …). Ideal for layout debugging and design review.</p>
+      </div>
+      <span class="tool-tag ro" data-i18n="tag_ro">Read</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">max_depth</td><td class="p-type">int</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="GetLayoutTree_p_max_depth">Cap traversal depth. Omit for the entire tree. (Ignored in deep mode.)</td></tr><tr><td class="p-name">filter_class</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="GetLayoutTree_p_filter_class">Keep only nodes whose class name contains this substring (ancestors retained).</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="GetLayoutTree_ret">A <code>[window]</code> header line (carrying <code>mode=deep|accessibility</code>) followed by the indented tree. In deep mode each node prints real View properties as <code>&lt;dp&gt;dp (&lt;px&gt;px)</code> and <code>textSize</code> as <code>&lt;sp&gt;sp</code>.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>[window] mode=deep package=com.miui.notes activity=...NoteEditorActivity window=...ViewRootImpl@482da82
+[0] DecorView  [0,0][1200,2670]
+    padding=[0,0,0,0]dp ([0,0,0,0]px)  elevation=0dp (0.0px)
+  [1] LinearLayout  [0,0][1200,2670]
+    ...
+            [10] TextView  [73,648][756,786]  id=guide_question_1  text="帮我检查这篇笔记有没有错误"
+                padding=[16.3,10.3,16.3,10.3]dp ([49,31,49,31]px)  margin=[0,20.3,0,0]dp ([0,61,0,0]px)
+                elevation=0dp (0.0px)  textSize=15sp (45.84375px)  radius=23dp (69.0px)</pre>
+        </div>
+      </div>
+      <div class="tool-note"><span class="ico">&#9432;</span><span data-i18n-html="GetLayoutTree_note">The first line tells you which backend is active — deep (JDWP) exposes padding/margin/textSize/cornerRadius; accessibility mode does not.</span></div>
+    </div>
+  </article>
+  <article class="tool" id="GetElementDetails">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">GetElementDetails<a class="tool-anchor" href="#GetElementDetails" aria-label="Link to GetElementDetails">#</a></div>
+        <p class="tool-summary" data-i18n="GetElementDetails_sum">Full property set of a single element, located by selector. In deep mode returns real View metrics (padding, margin, textSize, color, radius).</p>
+      </div>
+      <span class="tool-tag ro" data-i18n="tag_ro">Read</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">selector_type</td><td class="p-type">"text" | "resourceId" | "description"</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="GetElementDetails_p_selector_type">Which attribute to match on.</td></tr><tr><td class="p-name">selector_value</td><td class="p-type">str</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="GetElementDetails_p_selector_value">The value to match.</td></tr><tr><td class="p-name">timeout</td><td class="p-type">float</td><td class="p-default">5.0</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="GetElementDetails_p_timeout">Seconds to wait for the element.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="GetElementDetails_ret">A <code>mode:</code> line followed by class, resource-id, text, bounds, dp-converted size, and (deep mode) padding/margin/elevation/textSize/alpha/cornerRadius/textColor.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>mode: deep
+class: android.widget.TextView
+resource-id: guide_question_1
+text: 帮我检查这篇笔记有没有错误
+bounds: [73,648][756,786]
+width: 227.7dp (683px)
+height: 46dp (138px)
+paddingLeft: 16.3dp (49px)
+paddingTop: 10.3dp (31px)
+marginTop: 20.3dp (61px)
+elevation: 0dp (0.0px)
+textSize: 15sp (45.84375px)
+alpha: 1.0
+cornerRadius: 23dp (69.0px)
+textColor: #FF000000</pre>
+        </div>
+      </div>
+      <div class="tool-note"><span class="ico">&#9432;</span><span data-i18n-html="GetElementDetails_note">textColor is #AARRGGBB (alpha first). textSize uses the device's real scaled density, so it matches the design spec sp value.</span></div>
+    </div>
+  </article>
+  <article class="tool" id="GetSpacing">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">GetSpacing<a class="tool-anchor" href="#GetSpacing" aria-label="Link to GetSpacing">#</a></div>
+        <p class="tool-summary" data-i18n="GetSpacing_sum">Measured distance, containment padding, and alignment between two elements — px→dp converted using the real device density.</p>
+      </div>
+      <span class="tool-tag ro" data-i18n="tag_ro">Read</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">selector_type_a</td><td class="p-type">"text" | "resourceId" | "description"</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="GetSpacing_p_selector_type_a">Selector type for element A.</td></tr><tr><td class="p-name">selector_value_a</td><td class="p-type">str</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="GetSpacing_p_selector_value_a">Selector value for element A.</td></tr><tr><td class="p-name">selector_type_b</td><td class="p-type">"text" | "resourceId" | "description"</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="GetSpacing_p_selector_type_b">Selector type for element B.</td></tr><tr><td class="p-name">selector_value_b</td><td class="p-type">str</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="GetSpacing_p_selector_value_b">Selector value for element B.</td></tr><tr><td class="p-name">timeout</td><td class="p-type">float</td><td class="p-default">5.0</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="GetSpacing_p_timeout">Seconds to wait for each element.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="GetSpacing_ret">Both elements' bounds, the relationship (separate / A-inside-B / B-inside-A), horizontal & vertical gaps (dp) or containment padding, and alignment flags.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>element_a: [73,648][756,786]
+element_b: [73,835][621,973]
+relationship: separate
+horizontal_gap: 0dp (overlapping horizontally)
+vertical_gap: 16dp (B is below A)
+alignment: left-aligned</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="WaitForElement">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">WaitForElement<a class="tool-anchor" href="#WaitForElement" aria-label="Link to WaitForElement">#</a></div>
+        <p class="tool-summary" data-i18n="WaitForElement_sum">Poll until an element appears, then return its info. Use instead of Wait for dynamically loading content.</p>
+      </div>
+      <span class="tool-tag ro" data-i18n="tag_ro">Read</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">text</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="WaitForElement_p_text">Match by visible text.</td></tr><tr><td class="p-name">resourceId</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="WaitForElement_p_resourceId">Match by resource-id (short IDs auto-expanded).</td></tr><tr><td class="p-name">className</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="WaitForElement_p_className">Match by class name.</td></tr><tr><td class="p-name">description</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="WaitForElement_p_description">Match by content-description.</td></tr><tr><td class="p-name">timeout</td><td class="p-type">float</td><td class="p-default">10.0</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="WaitForElement_p_timeout">Max seconds to wait.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="WaitForElement_ret">On success: text, class, center coords, and bounds of the found element. On timeout: a not-found message.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Element found: text="提取这篇笔记里的待办" class=android.widget.TextView coords=(347,904) bounds=[73,835][621,973]</pre>
+        </div>
+      </div>
+      <div class="tool-note"><span class="ico">&#9432;</span><span data-i18n-html="WaitForElement_note">At least one selector must be provided.</span></div>
+    </div>
+  </article>
+    <h2 class="group-heading" data-i18n-suffix="group_action"><span data-i18n="group_action">Interaction / Action</span> <span class="count">9</span></h2>
+  <article class="tool" id="Click">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Click<a class="tool-anchor" href="#Click" aria-label="Link to Click">#</a></div>
+        <p class="tool-summary" data-i18n="Click_sum">Tap at an exact pixel coordinate.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">x</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Click_p_x">X coordinate (px).</td></tr><tr><td class="p-name">y</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Click_p_y">Y coordinate (px).</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Click_ret">Confirmation string.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Clicked on (414,717)</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="ClickBySelector">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">ClickBySelector<a class="tool-anchor" href="#ClickBySelector" aria-label="Link to ClickBySelector">#</a></div>
+        <p class="tool-summary" data-i18n="ClickBySelector_sum">Click an element by selector instead of coordinates — more robust to layout reflow. At least one selector required.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">text</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="ClickBySelector_p_text">Match by visible text.</td></tr><tr><td class="p-name">resourceId</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="ClickBySelector_p_resourceId">Match by resource-id (short IDs auto-expanded to package:id/…).</td></tr><tr><td class="p-name">className</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="ClickBySelector_p_className">Match by class name.</td></tr><tr><td class="p-name">description</td><td class="p-type">str</td><td class="p-default">None</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="ClickBySelector_p_description">Match by content-description.</td></tr><tr><td class="p-name">index</td><td class="p-type">int</td><td class="p-default">0</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="ClickBySelector_p_index">Pick the Nth match when several exist.</td></tr><tr><td class="p-name">timeout</td><td class="p-type">float</td><td class="p-default">5.0</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="ClickBySelector_p_timeout">Seconds to wait for the element.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="ClickBySelector_ret">Confirmation with the matched selectors, or a not-found message on timeout.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Clicked element matching {'resourceId': 'com.miui.notes:id/guide_question_1'}</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="LongClick">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">LongClick<a class="tool-anchor" href="#LongClick" aria-label="Link to LongClick">#</a></div>
+        <p class="tool-summary" data-i18n="LongClick_sum">Long press at an exact coordinate.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">x</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="LongClick_p_x">X coordinate (px).</td></tr><tr><td class="p-name">y</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="LongClick_p_y">Y coordinate (px).</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="LongClick_ret">Confirmation string.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Long Clicked on (414,717)</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="Swipe">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Swipe<a class="tool-anchor" href="#Swipe" aria-label="Link to Swipe">#</a></div>
+        <p class="tool-summary" data-i18n="Swipe_sum">Swipe from one coordinate to another.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">x1</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Swipe_p_x1">Start X (px).</td></tr><tr><td class="p-name">y1</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Swipe_p_y1">Start Y (px).</td></tr><tr><td class="p-name">x2</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Swipe_p_x2">End X (px).</td></tr><tr><td class="p-name">y2</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Swipe_p_y2">End Y (px).</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Swipe_ret">Confirmation string.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Swiped from (600,2000) to (600,800)</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="Type">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Type<a class="tool-anchor" href="#Type" aria-label="Link to Type">#</a></div>
+        <p class="tool-summary" data-i18n="Type_sum">Type text into the focused field. Enables the fast input IME first; can clear existing content.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">text</td><td class="p-type">str</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Type_p_text">Text to type.</td></tr><tr><td class="p-name">x</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Type_p_x">X coordinate (px) of the field.</td></tr><tr><td class="p-name">y</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Type_p_y">Y coordinate (px) of the field.</td></tr><tr><td class="p-name">clear</td><td class="p-type">bool</td><td class="p-default">False</td><td><span class="p-req no" data-i18n="req_opt">optional</span></td><td class="p-desc" data-i18n-html="Type_p_clear">Clear existing content before typing.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Type_ret">Confirmation string with the typed text.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Typed "提取待办" on (600,2512)</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="Drag">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Drag<a class="tool-anchor" href="#Drag" aria-label="Link to Drag">#</a></div>
+        <p class="tool-summary" data-i18n="Drag_sum">Drag from one location and drop on another.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">x1</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Drag_p_x1">Source X (px).</td></tr><tr><td class="p-name">y1</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Drag_p_y1">Source Y (px).</td></tr><tr><td class="p-name">x2</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Drag_p_x2">Drop X (px).</td></tr><tr><td class="p-name">y2</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Drag_p_y2">Drop Y (px).</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Drag_ret">Confirmation string.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Dragged from (200,500) and dropped on (800,500)</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="Press">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Press<a class="tool-anchor" href="#Press" aria-label="Link to Press">#</a></div>
+        <p class="tool-summary" data-i18n="Press_sum">Press a hardware/software button (e.g. back, home, recent, menu, volume_up).</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">button</td><td class="p-type">str</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Press_p_button">Button name, e.g. <code>back</code>, <code>home</code>, <code>recent</code>.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Press_ret">Confirmation string.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Pressed the "back" button</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="Notification">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Notification<a class="tool-anchor" href="#Notification" aria-label="Link to Notification">#</a></div>
+        <p class="tool-summary" data-i18n="Notification_sum">Open the device notification shade.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <p class="no-params" data-i18n="no_params">No parameters.</p>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Notification_ret">Confirmation string.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Accessed notification bar</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  <article class="tool" id="Wait">
+    <div class="tool-head">
+      <div class="tool-head-left">
+        <div class="tool-title">Wait<a class="tool-anchor" href="#Wait" aria-label="Link to Wait">#</a></div>
+        <p class="tool-summary" data-i18n="Wait_sum">Sleep for a fixed number of seconds. For dynamic content prefer WaitForElement.</p>
+      </div>
+      <span class="tool-tag rw" data-i18n="tag_rw">Action</span>
+    </div>
+    <div class="tool-body">
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_params">Parameters</div>
+        <table class="params"><thead><tr><th data-i18n="th_param">Parameter</th><th data-i18n="th_type">Type</th><th data-i18n="th_default">Default</th><th data-i18n="th_req">Required</th><th data-i18n="th_desc">Description</th></tr></thead><tbody><tr><td class="p-name">duration</td><td class="p-type">int</td><td class="p-default">—</td><td><span class="p-req yes" data-i18n="req_yes">required</span></td><td class="p-desc" data-i18n-html="Wait_p_duration">Seconds to wait.</td></tr></tbody></table>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_returns">Returns</div>
+        <div class="ret-format">
+          <span class="ret-type">string</span>
+          <span class="ret-note" data-i18n-html="Wait_ret">Confirmation string.</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-label" data-i18n="lbl_example">Response Example</div>
+        <div class="code">
+          <div class="code-bar"><div class="dots"><span></span><span></span><span></span></div><span class="tag">text</span></div>
+          <pre>Waited for 2 seconds</pre>
+        </div>
+      </div>
+      
+    </div>
+  </article>
+  </main>
+
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <p data-i18n="footer_text">Android MCP Pro — Open-source under MIT License</p>
+    <div class="footer-links">
+      <a href="index.html" data-i18n="footer_home">Home</a>
+      <a href="https://github.com/edditz/android-mcp-pro">GitHub</a>
+      <a href="https://github.com/edditz/android-mcp-pro/issues" data-i18n="footer_issues">Issues</a>
+    </div>
+  </div>
+</footer>
+
+<button class="to-top" id="toTop" aria-label="Back to top">&uarr;</button>
+
+<script>
+const I18N = {
+  "en": {
+    "nav_architecture": "Architecture",
+    "nav_config": "Configuration",
+    "nav_tools": "Tools",
+    "nav_deep": "Deep Mode",
+    "nav_quickstart": "Quick Start",
+    "crumb_home": "Home",
+    "crumb_tools": "Tool Reference",
+    "page_label": "Complete API Reference",
+    "page_title": "Every tool, <em>documented</em>",
+    "page_desc": "All 17 MCP tools with their parameters, return formats, and real response examples captured from a live device. Each tool maps 1:1 to a concrete Android action.",
+    "meta_tools": "<b>17</b> tools",
+    "meta_examples": "<b>Live</b> response samples",
+    "meta_deep": "<b>deep</b> mode properties shown",
+    "toc_meta": "Device / Meta",
+    "toc_read": "Read / Inspect",
+    "toc_action": "Interaction / Action",
+    "group_meta": "Device / Meta",
+    "group_read": "Read / Inspect",
+    "group_action": "Interaction / Action",
+    "lbl_params": "Parameters",
+    "lbl_returns": "Returns",
+    "lbl_example": "Response Example",
+    "th_param": "Parameter",
+    "th_type": "Type",
+    "th_default": "Default",
+    "th_req": "Required",
+    "th_desc": "Description",
+    "req_yes": "required",
+    "req_opt": "optional",
+    "no_params": "No parameters.",
+    "tag_meta": "Meta",
+    "tag_ro": "Read",
+    "tag_rw": "Action",
+    "footer_text": "Android MCP Pro — Open-source under MIT License",
+    "footer_home": "Home",
+    "footer_issues": "Issues",
+    "ListDevices_sum": "List available ADB devices and their connection state.",
+    "ListDevices_ret": "Tab-separated <code>serial\\tstate</code> lines, one per device. Returns a guidance message when none are found.",
+    "ConnectDevice_sum": "Connect to an ADB device by serial number. Wi-Fi serials (host:port) are auto-connected first.",
+    "ConnectDevice_ret": "Confirmation string with the resolved target.",
+    "ConnectDevice_p_serial": "ADB serial, or <code>host:port</code> for Wi-Fi ADB.",
+    "Device_sum": "Unified device management: list, connect, or disconnect via a single action parameter.",
+    "Device_ret": "For <code>list</code>: same as ListDevices. For <code>connect</code>/<code>disconnect</code>: a status line.",
+    "Device_p_action": "Operation to perform.",
+    "Device_p_serial": "Target serial for <code>connect</code>. Falls back to configured device when omitted.",
+    "Snapshot_sum": "Capture device state: a labeled table of interactive elements, plus an optional (annotated) screenshot.",
+    "Snapshot_ret": "A text table of labeled elements (Label / Name / ResourceId / Class / Coordinates). When <code>use_vision=true</code>, a PNG image is appended.",
+    "Snapshot_note": "Coordinates are the element center — pass them straight to Click.",
+    "Snapshot_p_use_vision": "Include a PNG screenshot in the result.",
+    "Snapshot_p_use_annotation": "Draw bounding boxes + numbered labels on the screenshot.",
+    "GetLayoutTree_sum": "Full view hierarchy as an indented tree, including containers (FrameLayout, LinearLayout, …). Ideal for layout debugging and design review.",
+    "GetLayoutTree_ret": "A <code>[window]</code> header line (carrying <code>mode=deep|accessibility</code>) followed by the indented tree. In deep mode each node prints real View properties as <code>&lt;dp&gt;dp (&lt;px&gt;px)</code> and <code>textSize</code> as <code>&lt;sp&gt;sp</code>.",
+    "GetLayoutTree_note": "The first line tells you which backend is active — deep (JDWP) exposes padding/margin/textSize/cornerRadius; accessibility mode does not.",
+    "GetLayoutTree_p_max_depth": "Cap traversal depth. Omit for the entire tree. (Ignored in deep mode.)",
+    "GetLayoutTree_p_filter_class": "Keep only nodes whose class name contains this substring (ancestors retained).",
+    "GetElementDetails_sum": "Full property set of a single element, located by selector. In deep mode returns real View metrics (padding, margin, textSize, color, radius).",
+    "GetElementDetails_ret": "A <code>mode:</code> line followed by class, resource-id, text, bounds, dp-converted size, and (deep mode) padding/margin/elevation/textSize/alpha/cornerRadius/textColor.",
+    "GetElementDetails_note": "textColor is #AARRGGBB (alpha first). textSize uses the device's real scaled density, so it matches the design spec sp value.",
+    "GetElementDetails_p_selector_type": "Which attribute to match on.",
+    "GetElementDetails_p_selector_value": "The value to match.",
+    "GetElementDetails_p_timeout": "Seconds to wait for the element.",
+    "GetSpacing_sum": "Measured distance, containment padding, and alignment between two elements — px→dp converted using the real device density.",
+    "GetSpacing_ret": "Both elements' bounds, the relationship (separate / A-inside-B / B-inside-A), horizontal & vertical gaps (dp) or containment padding, and alignment flags.",
+    "GetSpacing_p_selector_type_a": "Selector type for element A.",
+    "GetSpacing_p_selector_value_a": "Selector value for element A.",
+    "GetSpacing_p_selector_type_b": "Selector type for element B.",
+    "GetSpacing_p_selector_value_b": "Selector value for element B.",
+    "GetSpacing_p_timeout": "Seconds to wait for each element.",
+    "WaitForElement_sum": "Poll until an element appears, then return its info. Use instead of Wait for dynamically loading content.",
+    "WaitForElement_ret": "On success: text, class, center coords, and bounds of the found element. On timeout: a not-found message.",
+    "WaitForElement_note": "At least one selector must be provided.",
+    "WaitForElement_p_text": "Match by visible text.",
+    "WaitForElement_p_resourceId": "Match by resource-id (short IDs auto-expanded).",
+    "WaitForElement_p_className": "Match by class name.",
+    "WaitForElement_p_description": "Match by content-description.",
+    "WaitForElement_p_timeout": "Max seconds to wait.",
+    "Click_sum": "Tap at an exact pixel coordinate.",
+    "Click_ret": "Confirmation string.",
+    "Click_p_x": "X coordinate (px).",
+    "Click_p_y": "Y coordinate (px).",
+    "ClickBySelector_sum": "Click an element by selector instead of coordinates — more robust to layout reflow. At least one selector required.",
+    "ClickBySelector_ret": "Confirmation with the matched selectors, or a not-found message on timeout.",
+    "ClickBySelector_p_text": "Match by visible text.",
+    "ClickBySelector_p_resourceId": "Match by resource-id (short IDs auto-expanded to package:id/…).",
+    "ClickBySelector_p_className": "Match by class name.",
+    "ClickBySelector_p_description": "Match by content-description.",
+    "ClickBySelector_p_index": "Pick the Nth match when several exist.",
+    "ClickBySelector_p_timeout": "Seconds to wait for the element.",
+    "LongClick_sum": "Long press at an exact coordinate.",
+    "LongClick_ret": "Confirmation string.",
+    "LongClick_p_x": "X coordinate (px).",
+    "LongClick_p_y": "Y coordinate (px).",
+    "Swipe_sum": "Swipe from one coordinate to another.",
+    "Swipe_ret": "Confirmation string.",
+    "Swipe_p_x1": "Start X (px).",
+    "Swipe_p_y1": "Start Y (px).",
+    "Swipe_p_x2": "End X (px).",
+    "Swipe_p_y2": "End Y (px).",
+    "Type_sum": "Type text into the focused field. Enables the fast input IME first; can clear existing content.",
+    "Type_ret": "Confirmation string with the typed text.",
+    "Type_p_text": "Text to type.",
+    "Type_p_x": "X coordinate (px) of the field.",
+    "Type_p_y": "Y coordinate (px) of the field.",
+    "Type_p_clear": "Clear existing content before typing.",
+    "Drag_sum": "Drag from one location and drop on another.",
+    "Drag_ret": "Confirmation string.",
+    "Drag_p_x1": "Source X (px).",
+    "Drag_p_y1": "Source Y (px).",
+    "Drag_p_x2": "Drop X (px).",
+    "Drag_p_y2": "Drop Y (px).",
+    "Press_sum": "Press a hardware/software button (e.g. back, home, recent, menu, volume_up).",
+    "Press_ret": "Confirmation string.",
+    "Press_p_button": "Button name, e.g. <code>back</code>, <code>home</code>, <code>recent</code>.",
+    "Notification_sum": "Open the device notification shade.",
+    "Notification_ret": "Confirmation string.",
+    "Wait_sum": "Sleep for a fixed number of seconds. For dynamic content prefer WaitForElement.",
+    "Wait_ret": "Confirmation string.",
+    "Wait_p_duration": "Seconds to wait."
+  },
+  "zh": {
+    "nav_architecture": "架构",
+    "nav_config": "配置",
+    "nav_tools": "工具",
+    "nav_deep": "深度模式",
+    "nav_quickstart": "快速开始",
+    "crumb_home": "首页",
+    "crumb_tools": "工具参考",
+    "page_label": "完整 API 参考",
+    "page_title": "每个工具,<em>皆有文档</em>",
+    "page_desc": "全部 17 个 MCP 工具,含参数、返回格式,以及从真机实时抓取的真实返回示例。每个工具与一项具体的 Android 操作一一对应。",
+    "meta_tools": "<b>17</b> 个工具",
+    "meta_examples": "<b>真机</b>返回示例",
+    "meta_deep": "展示 <b>deep</b> 模式属性",
+    "toc_meta": "设备 / 元信息",
+    "toc_read": "读取 / 检视",
+    "toc_action": "交互 / 操作",
+    "group_meta": "设备 / 元信息",
+    "group_read": "读取 / 检视",
+    "group_action": "交互 / 操作",
+    "lbl_params": "参数",
+    "lbl_returns": "返回",
+    "lbl_example": "返回示例",
+    "th_param": "参数",
+    "th_type": "类型",
+    "th_default": "默认值",
+    "th_req": "必填",
+    "th_desc": "说明",
+    "req_yes": "必填",
+    "req_opt": "可选",
+    "no_params": "无参数。",
+    "tag_meta": "元信息",
+    "tag_ro": "读取",
+    "tag_rw": "操作",
+    "footer_text": "Android MCP Pro — MIT 许可证开源",
+    "footer_home": "首页",
+    "footer_issues": "问题",
+    "ListDevices_sum": "列出可用的 ADB 设备及其连接状态。",
+    "ListDevices_ret": "每行一个设备的制表符分隔 <code>序列号\\t状态</code>。无设备时返回提示信息。",
+    "ConnectDevice_sum": "通过序列号连接 ADB 设备。Wi-Fi 序列号(host:port)会先自动建立连接。",
+    "ConnectDevice_ret": "含已解析目标的确认字符串。",
+    "ConnectDevice_p_serial": "ADB 序列号,Wi-Fi 时为 <code>host:port</code>。",
+    "Device_sum": "统一的设备管理:通过单个 action 参数执行 列表 / 连接 / 断开。",
+    "Device_ret": "<code>list</code>:同 ListDevices。<code>connect</code>/<code>disconnect</code>:状态行。",
+    "Device_p_action": "要执行的操作。",
+    "Device_p_serial": "<code>connect</code> 的目标序列号。省略时回退到已配置设备。",
+    "Snapshot_sum": "捕获设备状态:可交互元素的带编号表格,以及可选的(标注)截图。",
+    "Snapshot_ret": "带编号元素的文本表格(Label / Name / ResourceId / Class / 坐标)。当 <code>use_vision=true</code> 时追加一张 PNG 图片。",
+    "Snapshot_note": "坐标为元素中心点,可直接传给 Click。",
+    "Snapshot_p_use_vision": "在结果中附带 PNG 截图。",
+    "Snapshot_p_use_annotation": "在截图上绘制边界框与编号标签。",
+    "GetLayoutTree_sum": "完整视图层次的缩进树,包含容器(FrameLayout、LinearLayout…)。适合布局调试与设计走查。",
+    "GetLayoutTree_ret": "一行 <code>[window]</code> 头(含 <code>mode=deep|accessibility</code>),其后是缩进树。deep 模式下每个节点以 <code>&lt;dp&gt;dp (&lt;px&gt;px)</code> 打印真实 View 属性,字号为 <code>&lt;sp&gt;sp</code>。",
+    "GetLayoutTree_note": "首行表明当前后端 —— deep(JDWP)暴露 padding/margin/textSize/cornerRadius,accessibility 模式则没有。",
+    "GetLayoutTree_p_max_depth": "限制遍历深度。省略则返回整棵树。(deep 模式下忽略。)",
+    "GetLayoutTree_p_filter_class": "仅保留类名包含该子串的节点(保留祖先容器)。",
+    "GetElementDetails_sum": "通过选择器定位单个元素并返回其完整属性集。deep 模式下返回真实 View 度量(padding、margin、textSize、颜色、圆角)。",
+    "GetElementDetails_ret": "一行 <code>mode:</code>,其后为 class、resource-id、text、bounds、dp 尺寸,以及(deep 模式)padding/margin/elevation/textSize/alpha/cornerRadius/textColor。",
+    "GetElementDetails_note": "textColor 为 #AARRGGBB(alpha 在前)。textSize 使用设备真实缩放密度,因此与设计稿 sp 值一致。",
+    "GetElementDetails_p_selector_type": "按哪个属性匹配。",
+    "GetElementDetails_p_selector_value": "要匹配的值。",
+    "GetElementDetails_p_timeout": "等待元素出现的秒数。",
+    "GetSpacing_sum": "测量两个元素之间的距离、包含关系的 padding 与对齐方式 —— 使用真实设备密度做 px→dp 换算。",
+    "GetSpacing_ret": "两个元素的 bounds、关系(separate / A 在 B 内 / B 在 A 内)、水平与垂直间距(dp)或包含 padding,以及对齐标志。",
+    "GetSpacing_p_selector_type_a": "元素 A 的选择器类型。",
+    "GetSpacing_p_selector_value_a": "元素 A 的选择器值。",
+    "GetSpacing_p_selector_type_b": "元素 B 的选择器类型。",
+    "GetSpacing_p_selector_value_b": "元素 B 的选择器值。",
+    "GetSpacing_p_timeout": "等待每个元素的秒数。",
+    "WaitForElement_sum": "轮询直到元素出现并返回其信息。内容动态加载时用它替代 Wait。",
+    "WaitForElement_ret": "成功:找到元素的 text、class、中心坐标与 bounds。超时:未找到提示。",
+    "WaitForElement_note": "必须至少提供一个选择器。",
+    "WaitForElement_p_text": "按可见文本匹配。",
+    "WaitForElement_p_resourceId": "按 resource-id 匹配(短 ID 自动扩展)。",
+    "WaitForElement_p_className": "按类名匹配。",
+    "WaitForElement_p_description": "按 content-description 匹配。",
+    "WaitForElement_p_timeout": "最长等待秒数。",
+    "Click_sum": "在精确像素坐标处点击。",
+    "Click_ret": "确认字符串。",
+    "Click_p_x": "X 坐标(px)。",
+    "Click_p_y": "Y 坐标(px)。",
+    "ClickBySelector_sum": "按选择器而非坐标点击元素 —— 对布局变动更稳健。至少需一个选择器。",
+    "ClickBySelector_ret": "含已匹配选择器的确认,超时则返回未找到。",
+    "ClickBySelector_p_text": "按可见文本匹配。",
+    "ClickBySelector_p_resourceId": "按 resource-id 匹配(短 ID 自动扩展为 package:id/…)。",
+    "ClickBySelector_p_className": "按类名匹配。",
+    "ClickBySelector_p_description": "按 content-description 匹配。",
+    "ClickBySelector_p_index": "存在多个匹配时选第 N 个。",
+    "ClickBySelector_p_timeout": "等待元素的秒数。",
+    "LongClick_sum": "在精确坐标处长按。",
+    "LongClick_ret": "确认字符串。",
+    "LongClick_p_x": "X 坐标(px)。",
+    "LongClick_p_y": "Y 坐标(px)。",
+    "Swipe_sum": "从一个坐标滑动到另一个坐标。",
+    "Swipe_ret": "确认字符串。",
+    "Swipe_p_x1": "起点 X(px)。",
+    "Swipe_p_y1": "起点 Y(px)。",
+    "Swipe_p_x2": "终点 X(px)。",
+    "Swipe_p_y2": "终点 Y(px)。",
+    "Type_sum": "向获得焦点的输入框输入文本。会先启用快速输入法;可清除已有内容。",
+    "Type_ret": "含已输入文本的确认字符串。",
+    "Type_p_text": "要输入的文本。",
+    "Type_p_x": "输入框的 X 坐标(px)。",
+    "Type_p_y": "输入框的 Y 坐标(px)。",
+    "Type_p_clear": "输入前清除已有内容。",
+    "Drag_sum": "从一个位置拖动并放到另一个位置。",
+    "Drag_ret": "确认字符串。",
+    "Drag_p_x1": "起点 X(px)。",
+    "Drag_p_y1": "起点 Y(px)。",
+    "Drag_p_x2": "落点 X(px)。",
+    "Drag_p_y2": "落点 Y(px)。",
+    "Press_sum": "按下硬件/软件按键(如 back、home、recent、menu、volume_up)。",
+    "Press_ret": "确认字符串。",
+    "Press_p_button": "按键名,如 <code>back</code>、<code>home</code>、<code>recent</code>。",
+    "Notification_sum": "打开设备通知栏。",
+    "Notification_ret": "确认字符串。",
+    "Wait_sum": "固定休眠若干秒。动态内容请优先用 WaitForElement。",
+    "Wait_ret": "确认字符串。",
+    "Wait_p_duration": "等待的秒数。"
+  }
+};
+
+function setLang(lang){
+  const tr = I18N[lang]; if(!tr) return;
+  document.documentElement.lang = lang;
+  localStorage.setItem('lang', lang);
+  document.getElementById('langEn').classList.toggle('active', lang==='en');
+  document.getElementById('langZh').classList.toggle('active', lang==='zh');
+  document.title = lang==='zh' ? '工具参考 — Android MCP Pro' : 'Tool Reference — Android MCP Pro';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.getAttribute('data-i18n'); if(tr[k]!==undefined) el.textContent = tr[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+    const k = el.getAttribute('data-i18n-html'); if(tr[k]!==undefined) el.innerHTML = tr[k];
+  });
+}
+(function(){
+  const saved = localStorage.getItem('lang') || 'en';
+  if(saved!=='en') setLang(saved);
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', ()=>{ nav.classList.toggle('scrolled', window.scrollY>10); }, {passive:true});
+  // TOC scroll-spy
+  const links = [...document.querySelectorAll('.toc-list a')];
+  const map = new Map(links.map(a=>[a.getAttribute('href').slice(1), a]));
+  const spy = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a = map.get(e.target.id); if(a) a.classList.add('active');
+      }
+    });
+  }, {rootMargin:'-80px 0px -65% 0px', threshold:0});
+  document.querySelectorAll('.tool').forEach(el=>spy.observe(el));
+  // Back to top
+  const toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', ()=>{ toTop.classList.toggle('show', window.scrollY>600); }, {passive:true});
+  toTop.addEventListener('click', ()=>window.scrollTo({top:0,behavior:'smooth'}));
+})();
+
+</script>
+</body>
+</html>
