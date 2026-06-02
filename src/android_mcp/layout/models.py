@@ -36,25 +36,41 @@ def _short_class(class_name: str) -> str:
     return class_name.rsplit(".", 1)[-1] if "." in class_name else class_name
 
 
+# The JDWP helper reports every distance in raw pixels (Android's ViewDebug
+# exports px). We render them as "<dp>dp (<px>px)" so a design review can compare
+# against Figma dp directly, while the raw px stays visible for sanity-checking.
+# Font sizes are shown in sp (the unit Figma/Android type scales use), not dp.
+from android_mcp.layout.density import px_to_dp
+
+
+def _dp_px(px: float, scale: float) -> str:
+    return f"{px_to_dp(px, scale)}dp ({px}px)"
+
+
 # A property line is emitted whenever the keys are PRESENT, even if all values are 0.
 # "Absent" (key not in dict) is intentionally distinct from "present and zero".
-def _padding_line(p: dict):
+def _box_line(name: str, keys: tuple, p: dict, scale: float):
+    if not any(k in p for k in keys):
+        return None
+    px = [p.get(k, 0) for k in keys]
+    dp = [px_to_dp(v, scale) for v in px]
+    return "{}=[{},{},{},{}]dp ([{},{},{},{}]px)".format(name, *dp, *px)
+
+
+def _padding_line(p: dict, scale: float):
     keys = ("paddingLeft", "paddingTop", "paddingRight", "paddingBottom")
-    if not any(k in p for k in keys):
-        return None
-    vals = [p.get(k, 0) for k in keys]
-    return "padding=[{},{},{},{}]".format(*vals)
+    return _box_line("padding", keys, p, scale)
 
 
-def _margin_line(p: dict):
+def _margin_line(p: dict, scale: float):
     keys = ("marginLeft", "marginTop", "marginRight", "marginBottom")
-    if not any(k in p for k in keys):
-        return None
-    vals = [p.get(k, 0) for k in keys]
-    return "margin=[{},{},{},{}]".format(*vals)
+    return _box_line("margin", keys, p, scale)
 
 
-def format_deep_tree(root: DeepLayoutNode) -> str:
+def format_deep_tree(root: DeepLayoutNode, scale: float = 1.0) -> str:
+    """Render the deep tree. `scale` is the device px-to-dp factor (density/160);
+    every distance is shown as dp with the raw px in parens. Pass 1.0 when the
+    density is unknown (dp will then equal px)."""
     lines = []
 
     def emit(node: DeepLayoutNode):
@@ -69,18 +85,18 @@ def format_deep_tree(root: DeepLayoutNode) -> str:
 
         p = node.properties
         prop_bits = []
-        pad = _padding_line(p)
+        pad = _padding_line(p, scale)
         if pad:
             prop_bits.append(pad)
-        mar = _margin_line(p)
+        mar = _margin_line(p, scale)
         if mar:
             prop_bits.append(mar)
         if "elevation" in p:
-            prop_bits.append(f"elevation={p['elevation']}dp")
+            prop_bits.append(f"elevation={_dp_px(p['elevation'], scale)}")
         if "textSize" in p:
-            prop_bits.append(f"textSize={p['textSize']}dp")
+            prop_bits.append(f"textSize={px_to_dp(p['textSize'], scale)}sp ({p['textSize']}px)")
         if "cornerRadius" in p:
-            prop_bits.append(f"radius={p['cornerRadius']}dp")
+            prop_bits.append(f"radius={_dp_px(p['cornerRadius'], scale)}")
         if prop_bits:
             lines.append(indent + "    " + "  ".join(prop_bits))
 

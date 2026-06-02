@@ -1,4 +1,5 @@
 from android_mcp.layout.models import DeepLayoutNode, format_deep_tree, format_window_header
+from android_mcp.layout.density import display_scale, px_to_dp
 from android_mcp.layout import jdwp_runner
 
 
@@ -51,16 +52,34 @@ def _find(node: DeepLayoutNode, selector_type: str, value: str):
     return None
 
 
-def _format_element(node: DeepLayoutNode) -> str:
+# Property keys whose values are raw pixel distances — annotated with dp on
+# output. textSize is shown in sp (the type-scale unit). Everything else
+# (textColor, alpha, scaledTextSize, ...) is passed through unchanged.
+_PX_KEYS = frozenset({
+    "paddingLeft", "paddingTop", "paddingRight", "paddingBottom",
+    "marginLeft", "marginTop", "marginRight", "marginBottom",
+    "elevation", "cornerRadius",
+})
+
+
+def _format_element(node: DeepLayoutNode, scale: float = 1.0) -> str:
     l, t, r, b = node.bounds
+    w_px, h_px = r - l, b - t
     lines = [
         f"class: {node.class_name}",
         f"resource-id: {node.resource_id}",
         f"text: {node.text}",
         f"bounds: [{l},{t}][{r},{b}]",
+        f"width: {px_to_dp(w_px, scale)}dp ({w_px}px)",
+        f"height: {px_to_dp(h_px, scale)}dp ({h_px}px)",
     ]
     for k, v in node.properties.items():
-        lines.append(f"{k}: {v}")
+        if k in _PX_KEYS:
+            lines.append(f"{k}: {px_to_dp(v, scale)}dp ({v}px)")
+        elif k == "textSize":
+            lines.append(f"textSize: {px_to_dp(v, scale)}sp ({v}px)")
+        else:
+            lines.append(f"{k}: {v}")
     return "\n".join(lines)
 
 
@@ -99,6 +118,14 @@ class JdwpProvider:
         }
         return _json_to_node(root_data, depth=0), meta
 
+    def _scale(self) -> float:
+        """Device px-to-dp factor; 1.0 if the device can't be queried (so output
+        degrades to px==dp rather than raising mid-render)."""
+        try:
+            return display_scale(self.mobile.get_device())
+        except Exception:
+            return 1.0
+
     def get_layout_tree(self, max_depth=None, filter_class=None) -> str:
         """Return the formatted deep layout tree.
 
@@ -117,7 +144,7 @@ class JdwpProvider:
                 return f"No elements matching class '{filter_class}' found."
         header = format_window_header(meta["package"], meta["activity"], meta["window"],
                                       mode="deep")
-        return header + "\n" + format_deep_tree(root)
+        return header + "\n" + format_deep_tree(root, scale=self._scale())
 
     def get_element_details(self, selector_type: str, selector_value: str, timeout: float = 5.0) -> str:
         valid = {"text", "resourceId", "description"}
@@ -138,7 +165,7 @@ class JdwpProvider:
                     if selector_type == "description" else "")
             return (f"ELEMENT_NOT_FOUND: no node with {selector_type}='{selector_value}'"
                     f"{note} in the deep tree.")
-        result = "mode: deep\n" + _format_element(node)
+        result = "mode: deep\n" + _format_element(node, scale=self._scale())
         if selector_type == "description":
             result = ("note: deep mode has no content-desc; matched on text instead\n"
                       + result)

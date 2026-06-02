@@ -8,15 +8,15 @@ system tolerances or grid, prefer those.
 
 ## Units & conversion (read first)
 
-- Figma values are in dp at 1× (CSS px in exported data). The device reports
-  pixels.
-- Convert device px → dp: `dp = px / (density_dpi / 160)`. The device's density
-  is available from the layout/snapshot context.
-- `GetSpacing` already returns **dp** and handles the conversion — prefer it for
-  gaps and margins over hand-subtracting raw bounds.
-- Font sizes: Figma gives px/dp; Android `textSize` in `--deep` is typically px
-  — convert to **sp** the same way (sp tracks dp at default font scale). State
-  the unit in every finding.
+- Figma values are in dp at 1× (CSS px in exported data).
+- **The android-mcp-pro tools already report dp for you** — no manual
+  conversion needed. In deep mode `GetLayoutTree` / `GetElementDetails` print
+  every distance as `<dp>dp (<px>px)` (e.g. `padding=[16,8,16,0]dp
+  ([48,24,48,0]px)`), and `textSize` as `<sp>sp (<px>px)`. Compare the **dp/sp**
+  value against Figma; the px is just there for sanity-checking.
+- `GetSpacing` likewise returns **dp**. Prefer it for gaps/margins over
+  hand-subtracting raw bounds.
+- Always quote the dp (or sp) value in findings, not the px.
 
 ## 1. Spacing & size
 

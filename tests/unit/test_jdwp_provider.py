@@ -39,11 +39,12 @@ def test_json_to_node_recursive():
 
 
 def test_get_layout_tree_renders(monkeypatch):
-    prov = make_provider(monkeypatch)
+    prov = make_provider(monkeypatch)  # FakeDevice scale = 1080/360 = 3.0
     out = prov.get_layout_tree()
     assert "TextView" in out and "ImageView" in out
-    assert "padding=[48,24,48,0]" in out
-    assert "textSize=42.0dp" in out
+    # px values converted to dp with raw px in parens; textSize in sp
+    assert "padding=[16,8,16,0]dp ([48,24,48,0]px)" in out
+    assert "textSize=14sp (42.0px)" in out
 
 
 def test_get_layout_tree_header_includes_package_and_window(monkeypatch):
@@ -86,7 +87,10 @@ def test_get_element_details_by_resourceid(monkeypatch):
     out = prov.get_element_details("resourceId", "title")
     assert out.startswith("mode: deep")
     assert "android.widget.TextView" in out
-    assert "paddingLeft" in out or "padding=" in out
+    # px props annotated with dp; bounds-derived width/height included (scale 3.0)
+    assert "paddingLeft: 16dp (48px)" in out
+    assert "textSize: 14sp (42.0px)" in out
+    assert "width: " in out and "dp (" in out
 
 
 def test_get_element_details_not_found(monkeypatch):

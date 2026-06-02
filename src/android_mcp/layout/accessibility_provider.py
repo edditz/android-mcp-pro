@@ -1,6 +1,6 @@
-import re
 from typing import Optional
 
+from android_mcp.layout.density import display_scale
 from android_mcp.layout.models import format_window_header
 from android_mcp.tree.service import Tree
 
@@ -17,30 +17,6 @@ def _resolve_resource_id(device, resource_id: str) -> str:
     if pkg:
         return f'{pkg}:id/{resource_id}'
     return resource_id
-
-
-def _display_scale(device) -> float:
-    """Return the px-to-dp scale factor (density / 160).
-
-    uiautomator2's device.info has no displayDensityDpi key, so derive the
-    scale from displayWidth / displaySizeDpX (e.g. 1200 / 400 = 3.0). Falls
-    back to `wm density`, then to 1.0 if neither is available.
-    """
-    info = device.info
-    width_px = info.get("displayWidth")
-    width_dp = info.get("displaySizeDpX")
-    if width_px and width_dp:
-        return width_px / width_dp
-
-    try:
-        output = device.shell("wm density").output
-        match = re.search(r"(\d+)", output)
-        if match:
-            return int(match.group(1)) / 160
-    except Exception:
-        pass
-
-    return 1.0
 
 
 def _filter_layout_tree(node, filter_class):
@@ -123,7 +99,7 @@ class AccessibilityProvider:
         bounds = info.get("bounds", {})
         visible_bounds = info.get("visibleBounds", {})
 
-        scale = _display_scale(device)
+        scale = display_scale(device)
 
         width_px = bounds.get("right", 0) - bounds.get("left", 0)
         height_px = bounds.get("bottom", 0) - bounds.get("top", 0)

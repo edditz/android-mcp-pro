@@ -25,16 +25,27 @@ def test_node_is_frozen_and_holds_properties():
         n.text = "mutated"
 
 
-def test_format_deep_tree_renders_property_lines():
+def test_format_deep_tree_renders_dp_with_px_in_parens():
+    # scale=3.0: raw px values convert to dp, px shown in parens. textSize → sp.
     root = _leaf(children=(_leaf(depth=1, resource_id="child", text="hi"),))
-    out = format_deep_tree(root)
+    out = format_deep_tree(root, scale=3.0)
     assert "[0] TextView" in out
     assert "id=title" in out
-    assert "padding=[48,24,48,0]" in out
-    assert "elevation=4.0dp" in out
-    assert "textSize=14.0dp" in out
+    # padding 48/24/48/0 px @ ×3 → 16/8/16/0 dp, raw px preserved
+    assert "padding=[16,8,16,0]dp ([48,24,48,0]px)" in out
+    # elevation 4px → 1.3dp
+    assert "elevation=1.3dp (4.0px)" in out
+    # textSize 14px → 4.7sp (font sizes are sp, not dp)
+    assert "textSize=4.7sp (14.0px)" in out
     assert "[1] TextView" in out
     assert "id=child" in out
+
+
+def test_format_deep_tree_scale_one_is_identity():
+    # When scale is unknown (1.0), dp == px numerically.
+    root = _leaf()
+    out = format_deep_tree(root, scale=1.0)
+    assert "padding=[48,24,48,0]dp ([48,24,48,0]px)" in out
 
 
 def test_format_omits_absent_property_lines():
@@ -43,7 +54,7 @@ def test_format_omits_absent_property_lines():
         text="", properties={"paddingLeft": 0, "paddingTop": 0, "paddingRight": 0,
                               "paddingBottom": 0}, depth=0, children=(),
     )
-    out = format_deep_tree(n)
+    out = format_deep_tree(n, scale=3.0)
     assert "textSize" not in out
     assert "elevation" not in out
 
@@ -52,7 +63,7 @@ def test_format_deep_tree_handles_three_levels():
     leaf = _leaf(depth=2, resource_id="leaf", text="deep")
     mid = _leaf(depth=1, resource_id="mid", text="", children=(leaf,))
     root = _leaf(depth=0, resource_id="root", children=(mid,))
-    out = format_deep_tree(root)
+    out = format_deep_tree(root, scale=3.0)
     lines = out.split("\n")
     # the leaf header line should be indented 2 levels (4 spaces) and tagged [2]
     assert any(line.startswith("    [2] TextView") and "id=leaf" in line for line in lines)
