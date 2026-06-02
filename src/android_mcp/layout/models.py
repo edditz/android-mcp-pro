@@ -47,6 +47,30 @@ def _dp_px(px: float, scale: float) -> str:
     return f"{px_to_dp(px, scale)}dp ({px}px)"
 
 
+def _round_sp(sp: float) -> float:
+    """Round an sp value to 1 decimal, dropping a trailing .0 (matches px_to_dp)."""
+    r = round(sp, 1)
+    return int(r) if r == int(r) else r
+
+
+def text_size_sp(p: dict, scale: float) -> str | None:
+    """Format a TextView's font size in sp from a property dict, or None if absent.
+
+    Prefers the device's own getScaledTextSize() — it back-converts px to sp with
+    the real scaled density, so it stays correct when the scaled density isn't a
+    clean 160-multiple (HyperOS/MIUI report e.g. 3.05625) or the system font scale
+    isn't 1.0. Only when scaledTextSize is missing do we approximate sp as
+    textSize_px / layout_scale, which assumes scaledDensity == density and
+    fontScale == 1 and is what produced the small (~2%) discrepancy bug.
+    """
+    if "textSize" not in p:
+        return None
+    px = p["textSize"]
+    scaled = p.get("scaledTextSize")
+    sp = _round_sp(scaled) if scaled is not None else px_to_dp(px, scale)
+    return f"textSize={sp}sp ({px}px)"
+
+
 # A property line is emitted whenever the keys are PRESENT, even if all values are 0.
 # "Absent" (key not in dict) is intentionally distinct from "present and zero".
 def _box_line(name: str, keys: tuple, p: dict, scale: float):
@@ -93,8 +117,9 @@ def format_deep_tree(root: DeepLayoutNode, scale: float = 1.0) -> str:
             prop_bits.append(mar)
         if "elevation" in p:
             prop_bits.append(f"elevation={_dp_px(p['elevation'], scale)}")
-        if "textSize" in p:
-            prop_bits.append(f"textSize={px_to_dp(p['textSize'], scale)}sp ({p['textSize']}px)")
+        ts = text_size_sp(p, scale)
+        if ts:
+            prop_bits.append(ts)
         if "cornerRadius" in p:
             prop_bits.append(f"radius={_dp_px(p['cornerRadius'], scale)}")
         if prop_bits:

@@ -93,6 +93,18 @@ def test_get_element_details_by_resourceid(monkeypatch):
     assert "width: " in out and "dp (" in out
 
 
+def test_get_element_details_text_size_prefers_scaled(monkeypatch):
+    # getScaledTextSize() present -> use it for sp (device's own px->sp conversion),
+    # not textSize/scale. 52/3 would be 17.3; scaledTextSize is exactly 17.
+    node = {**NODE, "properties": {"textSize": 52.0, "scaledTextSize": 17.0}}
+    dump = {**DUMP, "root": node}
+    prov = make_provider(monkeypatch, dump=dump)
+    out = prov.get_element_details("resourceId", "title")
+    assert "textSize: 17sp (52.0px)" in out
+    # scaledTextSize is consumed into textSize, not emitted as its own raw line
+    assert "scaledTextSize:" not in out
+
+
 def test_get_element_details_not_found(monkeypatch):
     prov = make_provider(monkeypatch)
     out = prov.get_element_details("resourceId", "does_not_exist")

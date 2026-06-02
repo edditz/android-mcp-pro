@@ -1,4 +1,4 @@
-from android_mcp.layout.models import DeepLayoutNode, format_deep_tree, format_window_header
+from android_mcp.layout.models import DeepLayoutNode, format_deep_tree, format_window_header, text_size_sp
 from android_mcp.layout.density import display_scale, px_to_dp
 from android_mcp.layout import jdwp_runner
 
@@ -77,7 +77,11 @@ def _format_element(node: DeepLayoutNode, scale: float = 1.0) -> str:
         if k in _PX_KEYS:
             lines.append(f"{k}: {px_to_dp(v, scale)}dp ({v}px)")
         elif k == "textSize":
-            lines.append(f"textSize: {px_to_dp(v, scale)}sp ({v}px)")
+            # text_size_sp prefers the device's getScaledTextSize() for the sp value;
+            # render as "textSize: <sp>sp (<px>px)" to match the dp/px style above.
+            lines.append(text_size_sp(node.properties, scale).replace("=", ": ", 1))
+        elif k == "scaledTextSize":
+            continue  # consumed by the textSize line above, not shown separately
         else:
             lines.append(f"{k}: {v}")
     return "\n".join(lines)

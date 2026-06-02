@@ -41,6 +41,24 @@ def test_format_deep_tree_renders_dp_with_px_in_parens():
     assert "id=child" in out
 
 
+def test_format_deep_tree_text_size_prefers_scaled():
+    # When the device reports getScaledTextSize(), use it for the sp value — it's
+    # the device's own px->sp conversion and stays correct even when the scaled
+    # density isn't a clean 160-multiple (HyperOS/MIUI) or font-scale != 1.
+    # Here textSize/scale would give 52/3 = 17.3, but scaledTextSize is exactly 17.
+    root = _leaf(properties={"textSize": 52.0, "scaledTextSize": 17.0})
+    out = format_deep_tree(root, scale=3.0)
+    assert "textSize=17sp (52.0px)" in out
+    assert "scaledTextSize" not in out  # consumed by textSize, not shown separately
+
+
+def test_format_deep_tree_text_size_falls_back_without_scaled():
+    # No scaledTextSize -> fall back to textSize px / layout scale.
+    root = _leaf(properties={"textSize": 42.0})
+    out = format_deep_tree(root, scale=3.0)
+    assert "textSize=14sp (42.0px)" in out
+
+
 def test_format_deep_tree_scale_one_is_identity():
     # When scale is unknown (1.0), dp == px numerically.
     root = _leaf()
