@@ -16,6 +16,7 @@ from fastmcp.utilities.types import Image
 from mcp.types import ToolAnnotations
 
 from android_mcp.mobile.service import Mobile
+from android_mcp.device_picker import pick_device, save_last_device, load_last_device, clear_last_device
 from android_mcp.jar_path import resolve_default_jar
 from android_mcp.layout.accessibility_provider import AccessibilityProvider
 from android_mcp.layout.jdwp_provider import JdwpProvider
@@ -231,19 +232,58 @@ def _not_configured_message() -> str:
 
 
 def _connect_preferred_device() -> None:
+    global _device_source
+
     if mobile.is_connected:
         return
 
     target = _resolve_target()
-    if not target.serial:
+
+    # User explicitly configured a device
+    if target.serial and target.source != "auto-detect":
+        serial = target.serial
+        if target.connection == "wifi" or ":" in serial:
+            serial = Mobile.normalize_wifi_serial(serial)
+            Mobile.adb_connect(serial)
+        mobile.connect(serial)
+        _device_source = "config"
+        return
+
+    # No explicit config — check last-device file
+    last = load_last_device()
+    if last:
+        devices = Mobile.list_devices()
+        online_serials = [s for s, st in devices if st == "device"]
+        if last in online_serials:
+            if ":" in last:
+                Mobile.adb_connect(last)
+            mobile.connect(last)
+            _device_source = "auto"
+            return
+
+    # Auto-detect: count online devices
+    devices = Mobile.list_devices()
+    online = [(s, st) for s, st in devices if st == "device"]
+
+    if not online:
         raise RuntimeError(_not_configured_message())
 
-    serial = target.serial
-    if target.connection == "wifi" or ":" in serial:
-        serial = Mobile.normalize_wifi_serial(serial)
-        Mobile.adb_connect(serial)
+    if len(online) == 1:
+        serial = online[0][0]
+        if ":" in serial:
+            Mobile.adb_connect(serial)
+        mobile.connect(serial)
+        save_last_device(serial)
+        _device_source = "auto"
+        return
 
+    # Multiple devices — launch picker
+    serial = pick_device(online)
+    if ":" in serial:
+        Mobile.adb_connect(serial)
     mobile.connect(serial)
+    save_last_device(serial)
+    _device_source = "picker"
 
 
 @asynccontextmanager
@@ -255,6 +295,7 @@ async def lifespan(app: FastMCP):
 
 mcp = FastMCP(name="Android-MCP-Pro", instructions=instructions)
 mobile = Mobile()
+_device_source: Optional[Literal["config", "auto", "picker"]] = None
 
 # Resolve the bundled jar across both layouts: in-package (installed wheel, where
 # hatchling force-includes android_mcp/prebuilt/deep-inspector.jar) and repo-root
