@@ -32,11 +32,16 @@ def clear_last_device() -> None:
         pass
 
 
-def _build_html(devices: list[tuple[str, str]], current_device: Optional[str] = None) -> str:
+def _build_html(
+    devices: list[tuple[str, str]],
+    current_device: Optional[str] = None,
+    context: str = "startup",
+) -> str:
     template = _TEMPLATE_PATH.read_text(encoding="utf-8")
     device_list = [{"serial": serial} for serial, _ in devices]
     html = template.replace("__DEVICES__", json.dumps(device_list))
     html = html.replace("__CURRENT_DEVICE__", current_device or "")
+    html = html.replace("__CONTEXT__", context)
     return html
 
 
@@ -47,13 +52,14 @@ def pick_device(
     port_callback: Optional[Callable[[int], None]] = None,
     current_device: Optional[str] = None,
     refresh_devices: Optional[Callable[[], list[tuple[str, str]]]] = None,
+    context: str = "startup",
 ) -> str:
     selected: list[str] = []
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             current_list = refresh_devices() if refresh_devices else devices
-            html = _build_html(current_list, current_device=current_device)
+            html = _build_html(current_list, current_device=current_device, context=context)
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()

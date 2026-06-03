@@ -269,7 +269,7 @@ def _connect_preferred_device() -> None:
         return [(s, st) for s, st in Mobile.list_devices() if st == "device"]
 
     # 0 or multiple devices — launch picker (0 shows empty state with polling)
-    serial = pick_device(online, refresh_devices=_refresh_devices_inner)
+    serial = pick_device(online, refresh_devices=_refresh_devices_inner, context="tool_call")
     if ":" in serial:
         Mobile.adb_connect(serial)
     mobile.connect(serial)
