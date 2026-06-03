@@ -783,6 +783,18 @@ def _startup_device_selection() -> None:
         run_picker_background(online, current_device=current, on_switch=_switch_device, refresh_devices=_refresh_devices)
         return
 
+    # Single device: auto-connect, show picker in background for switching
+    if len(online) == 1:
+        serial = online[0][0]
+        if ":" in serial:
+            Mobile.adb_connect(serial)
+        mobile.connect(serial)
+        save_last_device(serial)
+        _device_source = "auto"
+        run_picker_background(online, current_device=serial, on_switch=_switch_device, refresh_devices=_refresh_devices)
+        return
+
+    # Multiple devices or zero: block on picker
     serial = pick_device(online, refresh_devices=_refresh_devices)
     if ":" in serial:
         Mobile.adb_connect(serial)
