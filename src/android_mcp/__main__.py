@@ -16,7 +16,7 @@ from fastmcp.utilities.types import Image
 from mcp.types import ToolAnnotations
 
 from android_mcp.mobile.service import Mobile
-from android_mcp.device_picker import pick_device, save_last_device, load_last_device, clear_last_device
+from android_mcp.device_picker import pick_device, run_picker_background, save_last_device, load_last_device, clear_last_device
 from android_mcp.jar_path import resolve_default_jar
 from android_mcp.layout.accessibility_provider import AccessibilityProvider
 from android_mcp.layout.jdwp_provider import JdwpProvider
@@ -751,11 +751,23 @@ def wait_for_element_tool(text:str=None,resourceId:str=None,className:str=None,d
         return f'Element found: text="{info.get("text","")}" class={info.get("className","")} coords=({cx},{cy}) bounds=[{bounds.get("left",0)},{bounds.get("top",0)}][{bounds.get("right",0)},{bounds.get("bottom",0)}]'
     return f'Element not found with selectors {kwargs} within {timeout}s'
 
-def _startup_device_selection() -> None:
-    """Run device selection at startup (blocking) when no device is configured.
+def _switch_device(serial: str) -> None:
+    """Callback for background picker when user switches device."""
+    global _device_source
+    mobile.disconnect()
+    if ":" in serial:
+        Mobile.adb_connect(serial)
+    mobile.connect(serial)
+    save_last_device(serial)
+    _device_source = "picker"
 
-    Always shows the picker web page so the user can confirm or switch devices.
-    If a device was previously selected and is still online, shows it as current.
+
+def _startup_device_selection() -> None:
+    """Run device selection at startup when no device is configured.
+
+    - No previously selected device: blocks until user picks one.
+    - Has a valid previous device: connects immediately, launches picker
+      in background so user can switch without blocking MCP startup.
     """
     global _device_source
 
@@ -772,7 +784,15 @@ def _startup_device_selection() -> None:
     last = load_last_device()
     current = last if last and any(s == last for s, _ in online) else None
 
-    serial = pick_device(online, current_device=current)
+    if current:
+        if ":" in current:
+            Mobile.adb_connect(current)
+        mobile.connect(current)
+        _device_source = "picker"
+        run_picker_background(online, current_device=current, on_switch=_switch_device)
+        return
+
+    serial = pick_device(online)
     if ":" in serial:
         Mobile.adb_connect(serial)
     mobile.connect(serial)

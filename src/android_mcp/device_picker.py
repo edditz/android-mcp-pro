@@ -2,6 +2,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Callable, Optional
 import json
+import threading
 import time
 import webbrowser
 
@@ -98,3 +99,51 @@ def pick_device(
         server.server_close()
 
     return selected[0]
+
+
+def run_picker_background(
+    devices: list[tuple[str, str]],
+    current_device: str,
+    on_switch: Callable[[str], None],
+) -> None:
+    """Launch the picker web page in a background thread (non-blocking).
+
+    The page shows the current device as connected and allows switching.
+    When the user selects a different device, `on_switch(serial)` is called.
+    Selecting the same device just closes the page (no callback).
+    """
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            html = _build_html(devices, current_device=current_device)
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html.encode("utf-8"))
+
+        def do_POST(self):
+            if self.path == "/select":
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                serial = body.get("serial", "")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"ok":true}')
+                if serial and serial != current_device:
+                    on_switch(serial)
+                server.shutdown()
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def log_message(self, format, *args):
+            pass
+
+    server = HTTPServer(("127.0.0.1", 0), Handler)
+    port = server.server_address[1]
+
+    webbrowser.open(f"http://127.0.0.1:{port}")
+
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
