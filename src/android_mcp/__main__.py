@@ -769,15 +769,6 @@ def _startup_device_selection() -> None:
     if not online:
         return
 
-    if len(online) == 1:
-        serial = online[0][0]
-        if ":" in serial:
-            Mobile.adb_connect(serial)
-        mobile.connect(serial)
-        save_last_device(serial)
-        _device_source = "auto"
-        return
-
     last = load_last_device()
     current = last if last and any(s == last for s, _ in online) else None
 
