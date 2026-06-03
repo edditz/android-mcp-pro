@@ -114,3 +114,12 @@ def test_is_device_alive_offline():
 
     with patch("android_mcp.mobile.service.Mobile.list_devices", return_value=[("ABC123", "offline")]):
         assert _is_device_alive("ABC123") is False
+
+
+def test_template_file_exists_and_loadable():
+    """The HTML template file should exist and contain the __DEVICES__ placeholder."""
+    from android_mcp.device_picker import _TEMPLATE_PATH
+    assert _TEMPLATE_PATH.exists()
+    content = _TEMPLATE_PATH.read_text()
+    assert "__DEVICES__" in content
+    assert "/select" in content
