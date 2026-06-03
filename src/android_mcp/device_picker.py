@@ -42,16 +42,18 @@ def _build_html(devices: list[tuple[str, str]], current_device: Optional[str] = 
 
 def pick_device(
     devices: list[tuple[str, str]],
-    timeout: int = 60,
+    timeout: int = 120,
     open_browser: bool = True,
     port_callback: Optional[Callable[[int], None]] = None,
     current_device: Optional[str] = None,
+    refresh_devices: Optional[Callable[[], list[tuple[str, str]]]] = None,
 ) -> str:
     selected: list[str] = []
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
-            html = _build_html(devices, current_device=current_device)
+            current_list = refresh_devices() if refresh_devices else devices
+            html = _build_html(current_list, current_device=current_device)
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()

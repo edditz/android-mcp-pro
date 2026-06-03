@@ -778,9 +778,6 @@ def _startup_device_selection() -> None:
     devices = Mobile.list_devices()
     online = [(s, st) for s, st in devices if st == "device"]
 
-    if not online:
-        return
-
     last = load_last_device()
     current = last if last and any(s == last for s, _ in online) else None
 
@@ -792,7 +789,10 @@ def _startup_device_selection() -> None:
         run_picker_background(online, current_device=current, on_switch=_switch_device)
         return
 
-    serial = pick_device(online)
+    def _refresh_devices():
+        return [(s, st) for s, st in Mobile.list_devices() if st == "device"]
+
+    serial = pick_device(online, refresh_devices=_refresh_devices)
     if ":" in serial:
         Mobile.adb_connect(serial)
     mobile.connect(serial)
