@@ -70,6 +70,13 @@ def pick_device(
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(b'{"ok":true}')
+            elif self.path == "/devices":
+                current_list = refresh_devices() if refresh_devices else devices
+                device_list = [{"serial": s} for s, _ in current_list]
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(device_list).encode("utf-8"))
             else:
                 self.send_response(404)
                 self.end_headers()
@@ -107,6 +114,7 @@ def run_picker_background(
     devices: list[tuple[str, str]],
     current_device: str,
     on_switch: Callable[[str], None],
+    refresh_devices: Optional[Callable[[], list[tuple[str, str]]]] = None,
 ) -> None:
     """Launch the picker web page in a background thread (non-blocking).
 
@@ -135,6 +143,13 @@ def run_picker_background(
                 if serial and serial != current_device:
                     on_switch(serial)
                 server.shutdown()
+            elif self.path == "/devices":
+                current_list = refresh_devices() if refresh_devices else devices
+                device_list = [{"serial": s} for s, _ in current_list]
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(device_list).encode("utf-8"))
             else:
                 self.send_response(404)
                 self.end_headers()

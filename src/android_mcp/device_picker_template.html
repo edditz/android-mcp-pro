@@ -570,7 +570,10 @@ if (devices.length === 0) {
   });
 }
 
+let selectedDone = false;
+
 async function selectDevice(serial, card) {
+  selectedDone = true;
   card.classList.add('selecting');
   list.classList.add('fade-out');
 
@@ -587,10 +590,124 @@ async function selectDevice(serial, card) {
       document.getElementById('success-serial').textContent = serial;
     }, 300);
   } catch (err) {
+    selectedDone = false;
     card.classList.remove('selecting');
     list.classList.remove('fade-out');
   }
 }
+
+// Poll for device changes every 2 seconds
+let lastDeviceJson = JSON.stringify(devices);
+
+async function pollDevices() {
+  if (selectedDone) return;
+  try {
+    const resp = await fetch('/devices', { method: 'POST' });
+    const newDevices = await resp.json();
+    const newJson = JSON.stringify(newDevices);
+    if (newJson !== lastDeviceJson) {
+      lastDeviceJson = newJson;
+      renderDevices(newDevices);
+    }
+  } catch (e) {}
+}
+
+function renderDevices(deviceList) {
+  list.innerHTML = '';
+  document.getElementById('connected-section').innerHTML = '';
+  document.getElementById('switch-label').style.display = 'none';
+
+  if (deviceList.length === 0) {
+    document.getElementById('page-title').textContent = 'No Device Found';
+    document.getElementById('page-subtitle').textContent = 'Connect an Android device via USB or Wi-Fi ADB to get started.';
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="9" y1="11" x2="15" y2="11"/>
+          </svg>
+        </div>
+        <div class="empty-title">No devices detected</div>
+        <div class="empty-desc">
+          1. Enable USB debugging on your device<br>
+          2. Connect via USB cable or run <code>adb connect host:port</code>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const hasCurrent = currentDevice && deviceList.some(d => d.serial === currentDevice);
+
+  if (hasCurrent) {
+    document.getElementById('page-title').textContent = 'Device Connected';
+    document.getElementById('page-subtitle').textContent = 'Currently connected device. You can keep it or switch to another.';
+    const isCurrentWifi = currentDevice.includes(':');
+    document.getElementById('connected-section').innerHTML = `
+      <div class="connected-header">
+        <div class="status-line"><span class="status-dot"></span> Connected</div>
+        <div class="serial">${currentDevice}</div>
+      </div>
+    `;
+
+    const keepCard = document.createElement('div');
+    keepCard.className = 'device-card current';
+    keepCard.setAttribute('role', 'button');
+    keepCard.setAttribute('tabindex', '0');
+    keepCard.innerHTML = `
+      <div class="device-icon ${isCurrentWifi ? 'wifi' : 'usb'}">
+        ${isCurrentWifi ? SVG_WIFI : SVG_USB}
+      </div>
+      <div class="device-info">
+        <div class="device-serial">${currentDevice}</div>
+        <div class="device-type">Keep current device</div>
+      </div>
+      <span class="current-badge">Current</span>
+    `;
+    keepCard.addEventListener('click', () => selectDevice(currentDevice, keepCard));
+    list.appendChild(keepCard);
+
+    const others = deviceList.filter(d => d.serial !== currentDevice);
+    if (others.length > 0) {
+      document.getElementById('switch-label').style.display = 'block';
+    }
+    others.forEach(device => {
+      list.appendChild(createDeviceCard(device));
+    });
+  } else {
+    document.getElementById('page-title').textContent = 'Select Device';
+    document.getElementById('page-subtitle').textContent = 'Choose which device to connect.';
+    deviceList.forEach(device => {
+      list.appendChild(createDeviceCard(device));
+    });
+  }
+}
+
+function createDeviceCard(device) {
+  const isWifi = device.serial.includes(':');
+  const card = document.createElement('div');
+  card.className = 'device-card';
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.innerHTML = `
+    <div class="device-icon ${isWifi ? 'wifi' : 'usb'}">
+      ${isWifi ? SVG_WIFI : SVG_USB}
+    </div>
+    <div class="device-info">
+      <div class="device-serial">${device.serial}</div>
+      <div class="device-type">${isWifi ? 'Wi-Fi ADB' : 'USB'}</div>
+    </div>
+    <div class="device-arrow">${SVG_ARROW}</div>
+  `;
+  card.addEventListener('click', () => selectDevice(device.serial, card));
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDevice(device.serial, card); }
+  });
+  return card;
+}
+
+setInterval(pollDevices, 2000);
 </script>
 
 </body>
