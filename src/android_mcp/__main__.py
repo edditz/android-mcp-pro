@@ -261,24 +261,15 @@ def _connect_preferred_device() -> None:
             _device_source = "auto"
             return
 
-    # Auto-detect: count online devices
+    # Auto-detect: list devices, launch picker if needed
     devices = Mobile.list_devices()
     online = [(s, st) for s, st in devices if st == "device"]
 
-    if not online:
-        raise RuntimeError(_not_configured_message())
+    def _refresh_devices_inner():
+        return [(s, st) for s, st in Mobile.list_devices() if st == "device"]
 
-    if len(online) == 1:
-        serial = online[0][0]
-        if ":" in serial:
-            Mobile.adb_connect(serial)
-        mobile.connect(serial)
-        save_last_device(serial)
-        _device_source = "auto"
-        return
-
-    # Multiple devices — launch picker
-    serial = pick_device(online)
+    # 0 or multiple devices — launch picker (0 shows empty state with polling)
+    serial = pick_device(online, refresh_devices=_refresh_devices_inner)
     if ":" in serial:
         Mobile.adb_connect(serial)
     mobile.connect(serial)
