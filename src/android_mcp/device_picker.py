@@ -7,6 +7,29 @@ import webbrowser
 
 _TEMPLATE_PATH = Path(__file__).parent / "device_picker_template.html"
 
+_CONFIG_DIR = Path.home() / ".android-mcp-pro"
+_LAST_DEVICE_FILE = _CONFIG_DIR / "last-device"
+
+
+def save_last_device(serial: str) -> None:
+    _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    _LAST_DEVICE_FILE.write_text(serial, encoding="utf-8")
+
+
+def load_last_device() -> Optional[str]:
+    try:
+        content = _LAST_DEVICE_FILE.read_text(encoding="utf-8").strip()
+        return content or None
+    except FileNotFoundError:
+        return None
+
+
+def clear_last_device() -> None:
+    try:
+        _LAST_DEVICE_FILE.unlink()
+    except FileNotFoundError:
+        pass
+
 
 def _build_html(devices: list[tuple[str, str]]) -> str:
     template = _TEMPLATE_PATH.read_text(encoding="utf-8")

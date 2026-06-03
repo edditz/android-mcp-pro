@@ -55,3 +55,35 @@ def test_build_html_injects_devices():
     assert "__DEVICES__" not in html
     assert '"ABC123"' in html
     assert '"10.0.0.1:5555"' in html
+
+
+from android_mcp.device_picker import save_last_device, load_last_device, clear_last_device
+
+
+def test_save_and_load_last_device(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    # Force re-evaluation of Path.home() by patching the module-level vars
+    import android_mcp.device_picker as dp
+    monkeypatch.setattr(dp, "_CONFIG_DIR", tmp_path / ".android-mcp-pro")
+    monkeypatch.setattr(dp, "_LAST_DEVICE_FILE", tmp_path / ".android-mcp-pro" / "last-device")
+
+    save_last_device("R5CT1234567")
+    assert load_last_device() == "R5CT1234567"
+
+
+def test_load_last_device_missing(tmp_path, monkeypatch):
+    import android_mcp.device_picker as dp
+    monkeypatch.setattr(dp, "_CONFIG_DIR", tmp_path / ".android-mcp-pro")
+    monkeypatch.setattr(dp, "_LAST_DEVICE_FILE", tmp_path / ".android-mcp-pro" / "last-device")
+
+    assert load_last_device() is None
+
+
+def test_clear_last_device(tmp_path, monkeypatch):
+    import android_mcp.device_picker as dp
+    monkeypatch.setattr(dp, "_CONFIG_DIR", tmp_path / ".android-mcp-pro")
+    monkeypatch.setattr(dp, "_LAST_DEVICE_FILE", tmp_path / ".android-mcp-pro" / "last-device")
+
+    save_last_device("R5CT1234567")
+    clear_last_device()
+    assert load_last_device() is None
