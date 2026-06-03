@@ -87,3 +87,30 @@ def test_clear_last_device(tmp_path, monkeypatch):
     save_last_device("R5CT1234567")
     clear_last_device()
     assert load_last_device() is None
+
+
+def test_is_device_alive_true():
+    """Device is alive when serial appears in adb devices with state 'device'."""
+    from android_mcp.__main__ import _is_device_alive
+    from unittest.mock import patch
+
+    with patch("android_mcp.mobile.service.Mobile.list_devices", return_value=[("ABC123", "device"), ("DEF456", "device")]):
+        assert _is_device_alive("ABC123") is True
+
+
+def test_is_device_alive_false():
+    """Device is not alive when serial is missing from adb devices."""
+    from android_mcp.__main__ import _is_device_alive
+    from unittest.mock import patch
+
+    with patch("android_mcp.mobile.service.Mobile.list_devices", return_value=[("OTHER", "device")]):
+        assert _is_device_alive("ABC123") is False
+
+
+def test_is_device_alive_offline():
+    """Device is not alive when state is not 'device' (e.g. 'offline')."""
+    from android_mcp.__main__ import _is_device_alive
+    from unittest.mock import patch
+
+    with patch("android_mcp.mobile.service.Mobile.list_devices", return_value=[("ABC123", "offline")]):
+        assert _is_device_alive("ABC123") is False

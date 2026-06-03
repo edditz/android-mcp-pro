@@ -337,7 +337,30 @@ layout_provider = build_provider(
 )
 
 
+def _is_device_alive(serial: str) -> bool:
+    devices = Mobile.list_devices()
+    online_serials = [s for s, st in devices if st == "device"]
+    return serial in online_serials
+
+
 def require_device():
+    global _device_source
+
+    if mobile.is_connected:
+        device = mobile.get_device()
+        serial = getattr(device, "serial", None) or getattr(device, "_serial", None)
+        if serial and not _is_device_alive(serial):
+            mobile.disconnect()
+            if _device_source == "config":
+                raise RuntimeError(
+                    f"Configured device '{serial}' is not connected."
+                    + _format_available_devices()
+                )
+            clear_last_device()
+            _device_source = None
+        else:
+            return device
+
     _connect_preferred_device()
     return mobile.get_device()
 
