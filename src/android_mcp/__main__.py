@@ -751,7 +751,36 @@ def wait_for_element_tool(text:str=None,resourceId:str=None,className:str=None,d
         return f'Element found: text="{info.get("text","")}" class={info.get("className","")} coords=({cx},{cy}) bounds=[{bounds.get("left",0)},{bounds.get("top",0)}][{bounds.get("right",0)},{bounds.get("bottom",0)}]'
     return f'Element not found with selectors {kwargs} within {timeout}s'
 
+def _startup_device_selection() -> None:
+    """Run device selection at startup (blocking) when no device is configured."""
+    preference = _configured_preference()
+    if preference.serial:
+        return
+
+    last = load_last_device()
+    if last:
+        devices = Mobile.list_devices()
+        online_serials = [s for s, st in devices if st == "device"]
+        if last in online_serials:
+            return
+
+    devices = Mobile.list_devices()
+    online = [(s, st) for s, st in devices if st == "device"]
+
+    if len(online) <= 1:
+        return
+
+    serial = pick_device(online)
+    if ":" in serial:
+        Mobile.adb_connect(serial)
+    mobile.connect(serial)
+    save_last_device(serial)
+    global _device_source
+    _device_source = "picker"
+
+
 def main():
+    _startup_device_selection()
     mcp.run()
 
 
