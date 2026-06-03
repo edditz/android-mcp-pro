@@ -752,30 +752,40 @@ def wait_for_element_tool(text:str=None,resourceId:str=None,className:str=None,d
     return f'Element not found with selectors {kwargs} within {timeout}s'
 
 def _startup_device_selection() -> None:
-    """Run device selection at startup (blocking) when no device is configured."""
+    """Run device selection at startup (blocking) when no device is configured.
+
+    Always shows the picker web page so the user can confirm or switch devices.
+    If a device was previously selected and is still online, shows it as current.
+    """
+    global _device_source
+
     preference = _configured_preference()
     if preference.serial:
         return
 
-    last = load_last_device()
-    if last:
-        devices = Mobile.list_devices()
-        online_serials = [s for s, st in devices if st == "device"]
-        if last in online_serials:
-            return
-
     devices = Mobile.list_devices()
     online = [(s, st) for s, st in devices if st == "device"]
 
-    if len(online) <= 1:
+    if not online:
         return
 
-    serial = pick_device(online)
+    if len(online) == 1:
+        serial = online[0][0]
+        if ":" in serial:
+            Mobile.adb_connect(serial)
+        mobile.connect(serial)
+        save_last_device(serial)
+        _device_source = "auto"
+        return
+
+    last = load_last_device()
+    current = last if last and any(s == last for s, _ in online) else None
+
+    serial = pick_device(online, current_device=current)
     if ":" in serial:
         Mobile.adb_connect(serial)
     mobile.connect(serial)
     save_last_device(serial)
-    global _device_source
     _device_source = "picker"
 
 

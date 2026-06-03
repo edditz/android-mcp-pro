@@ -297,6 +297,70 @@
     margin-top: 1rem;
   }
 
+  /* Current device badge */
+  .device-card.current {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .device-card.current .device-type {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .current-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Connected view */
+  .connected-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+  }
+
+  .connected-header .status-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .connected-header .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .connected-header .serial {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .switch-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    text-align: center;
+  }
+
   /* Selection animation */
   .device-card.selecting {
     pointer-events: none;
@@ -322,10 +386,13 @@
         </div>
         <span class="logo-text">Android MCP Pro</span>
       </div>
-      <h1>Select Device</h1>
-      <p class="subtitle">Multiple devices detected. Choose which one to connect.</p>
+      <h1 id="page-title">Select Device</h1>
+      <p class="subtitle" id="page-subtitle">Choose which device to connect.</p>
     </div>
 
+    <div id="connected-section"></div>
+
+    <div id="switch-label" class="switch-label" style="display:none">Switch to another device:</div>
     <div class="device-list" id="device-list"></div>
 
     <div class="footer">
@@ -345,6 +412,7 @@
 
 <script>
 const devices = __DEVICES__;
+const currentDevice = "__CURRENT_DEVICE__";
 
 const SVG_USB = `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10m0 0l3-3m-3 3l-3-3"/><circle cx="12" cy="18" r="2"/><path d="M7 10V8a2 2 0 012-2h0"/><path d="M17 10V8a2 2 0 00-2-2h0"/><circle cx="7" cy="12" r="1.5"/><circle cx="17" cy="12" r="1.5"/><line x1="12" y1="14" x2="12" y2="16"/></svg>`;
 
@@ -353,36 +421,96 @@ const SVG_WIFI = `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoi
 const SVG_ARROW = `<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"/></svg>`;
 
 const list = document.getElementById('device-list');
+const hasCurrentDevice = currentDevice && currentDevice !== "";
 
-devices.forEach((device, i) => {
-  const isWifi = device.serial.includes(':');
-  const card = document.createElement('div');
-  card.className = 'device-card';
-  card.setAttribute('role', 'button');
-  card.setAttribute('tabindex', '0');
-  card.style.animationDelay = `${i * 60}ms`;
+// If a device is already selected, show the connected state
+if (hasCurrentDevice) {
+  document.getElementById('page-title').textContent = 'Device Connected';
+  document.getElementById('page-subtitle').textContent = 'Currently connected device. You can keep it or switch to another.';
 
-  card.innerHTML = `
-    <div class="device-icon ${isWifi ? 'wifi' : 'usb'}">
-      ${isWifi ? SVG_WIFI : SVG_USB}
+  const connectedSection = document.getElementById('connected-section');
+  const isCurrentWifi = currentDevice.includes(':');
+  connectedSection.innerHTML = `
+    <div class="connected-header">
+      <div class="status-line"><span class="status-dot"></span> Connected</div>
+      <div class="serial">${currentDevice}</div>
     </div>
-    <div class="device-info">
-      <div class="device-serial">${device.serial}</div>
-      <div class="device-type">${isWifi ? 'Wi-Fi ADB' : 'USB'}</div>
-    </div>
-    <div class="device-arrow">${SVG_ARROW}</div>
   `;
 
-  card.addEventListener('click', () => selectDevice(device.serial, card));
-  card.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      selectDevice(device.serial, card);
-    }
+  // Show the current device as a selectable card (to confirm/keep it)
+  const keepCard = document.createElement('div');
+  keepCard.className = 'device-card current';
+  keepCard.setAttribute('role', 'button');
+  keepCard.setAttribute('tabindex', '0');
+  keepCard.innerHTML = `
+    <div class="device-icon ${isCurrentWifi ? 'wifi' : 'usb'}">
+      ${isCurrentWifi ? SVG_WIFI : SVG_USB}
+    </div>
+    <div class="device-info">
+      <div class="device-serial">${currentDevice}</div>
+      <div class="device-type">Keep current device</div>
+    </div>
+    <span class="current-badge">Current</span>
+  `;
+  keepCard.addEventListener('click', () => selectDevice(currentDevice, keepCard));
+  keepCard.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDevice(currentDevice, keepCard); }
   });
+  list.appendChild(keepCard);
 
-  list.appendChild(card);
-});
+  // Show other devices
+  const others = devices.filter(d => d.serial !== currentDevice);
+  if (others.length > 0) {
+    document.getElementById('switch-label').style.display = 'block';
+  }
+  others.forEach((device, i) => {
+    const isWifi = device.serial.includes(':');
+    const card = document.createElement('div');
+    card.className = 'device-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.innerHTML = `
+      <div class="device-icon ${isWifi ? 'wifi' : 'usb'}">
+        ${isWifi ? SVG_WIFI : SVG_USB}
+      </div>
+      <div class="device-info">
+        <div class="device-serial">${device.serial}</div>
+        <div class="device-type">${isWifi ? 'Wi-Fi ADB' : 'USB'}</div>
+      </div>
+      <div class="device-arrow">${SVG_ARROW}</div>
+    `;
+    card.addEventListener('click', () => selectDevice(device.serial, card));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDevice(device.serial, card); }
+    });
+    list.appendChild(card);
+  });
+} else {
+  // No current device — show all devices for selection
+  devices.forEach((device, i) => {
+    const isWifi = device.serial.includes(':');
+    const card = document.createElement('div');
+    card.className = 'device-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.style.animationDelay = `${i * 60}ms`;
+    card.innerHTML = `
+      <div class="device-icon ${isWifi ? 'wifi' : 'usb'}">
+        ${isWifi ? SVG_WIFI : SVG_USB}
+      </div>
+      <div class="device-info">
+        <div class="device-serial">${device.serial}</div>
+        <div class="device-type">${isWifi ? 'Wi-Fi ADB' : 'USB'}</div>
+      </div>
+      <div class="device-arrow">${SVG_ARROW}</div>
+    `;
+    card.addEventListener('click', () => selectDevice(device.serial, card));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDevice(device.serial, card); }
+    });
+    list.appendChild(card);
+  });
+}
 
 async function selectDevice(serial, card) {
   card.classList.add('selecting');
